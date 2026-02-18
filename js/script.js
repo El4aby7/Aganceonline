@@ -1,4 +1,15 @@
-const USD_TO_EGP = 50;
+/**
+ * Agance online - Main Application Logic
+ *
+ * This script handles:
+ * 1. Global State Management (Theme, Language, Currency, Favorites).
+ * 2. Data Loading (Products, Translations).
+ * 3. Page-Specific Logic (Home, Inventory, Details, Favorites).
+ * 4. UI Updates & Rendering.
+ */
+
+// --- Constants & Global Variables ---
+const USD_TO_EGP = 50; // Fixed exchange rate
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
@@ -6,14 +17,18 @@ let translations = {};
 let products = [];
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     init();
 });
 
+/**
+ * Initializes the application state and loads necessary data.
+ */
 async function init() {
-    // Apply initial state
+    // Apply initial preferences
     setTheme(currentTheme);
-    await setLanguage(currentLang); // This also fetches translations
+    await setLanguage(currentLang); // Also fetches translation data
 
     // Bind Global Event Listeners
     const themeToggle = document.getElementById('theme-toggle');
@@ -28,10 +43,10 @@ async function init() {
         updateCurrencyButtonText();
     }
 
-    // Load Data
+    // Load Product Data
     await loadProducts();
 
-    // Route to Page Logic
+    // Route execution to specific page logic based on URL
     const path = window.location.pathname;
     if (path.endsWith('index.html') || path.endsWith('/')) {
         loadHome();
@@ -48,6 +63,10 @@ async function init() {
 
 // --- State Management ---
 
+/**
+ * Sets the active theme (light/dark) and persists to localStorage.
+ * @param {string} theme - 'light' or 'dark'
+ */
 function setTheme(theme) {
     currentTheme = theme;
     localStorage.setItem('theme', theme);
@@ -60,10 +79,16 @@ function setTheme(theme) {
     updateThemeIcon();
 }
 
+/**
+ * Toggles between light and dark themes.
+ */
 function toggleTheme() {
     setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 }
 
+/**
+ * Updates the theme toggle icon in the header.
+ */
 function updateThemeIcon() {
     const icon = document.querySelector('#theme-toggle span');
     if (icon) {
@@ -71,13 +96,17 @@ function updateThemeIcon() {
     }
 }
 
+/**
+ * Sets the active language, updates HTML dir/lang attributes, and refreshes translations.
+ * @param {string} lang - 'en' or 'ar'
+ */
 async function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('lang', lang);
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
 
-    // Fetch translations if not loaded
+    // Fetch translations if not already loaded
     if (!translations[lang]) {
         try {
             const response = await fetch('data/translations.json');
@@ -96,6 +125,9 @@ function toggleLanguage() {
     setLanguage(currentLang === 'en' ? 'ar' : 'en');
 }
 
+/**
+ * Updates all elements with [data-i18n] attributes with the current language text.
+ */
 function updateDOMTranslations() {
     if (!translations[currentLang]) return;
 
@@ -106,7 +138,7 @@ function updateDOMTranslations() {
         }
     });
 
-    // Update placeholders
+    // Update placeholders for inputs
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (translations[currentLang][key]) {
@@ -134,6 +166,9 @@ function updateCurrencyButtonText() {
     }
 }
 
+/**
+ * Updates displayed prices based on the selected currency and exchange rate.
+ */
 function updatePrices() {
     document.querySelectorAll('[data-price-usd]').forEach(el => {
         const usd = parseFloat(el.getAttribute('data-price-usd'));
@@ -141,6 +176,11 @@ function updatePrices() {
     });
 }
 
+/**
+ * Formats a raw USD price into the target currency string.
+ * @param {number} usd - Price in USD
+ * @returns {string} Formatted price string (e.g. "$50,000" or "2,500,000 L.E")
+ */
 function formatPrice(usd) {
     if (currentCurrency === 'USD') {
         const symbol = (translations[currentLang] && translations[currentLang].price_usd) || 'USD';
@@ -153,24 +193,29 @@ function formatPrice(usd) {
 
 // --- Favorites Management ---
 
+/**
+ * Toggles a product ID in the favorites list and updates the UI.
+ * @param {number} id - Product ID
+ * @param {HTMLElement} btn - The button element triggered
+ */
 window.toggleFavorite = function(id, btn) {
     const index = favorites.indexOf(id);
     if (index === -1) {
         favorites.push(id);
-        // Style: Filled
+        // Style: Filled Heart
         btn.innerHTML = '<span class="material-symbols-outlined filled-heart" style="font-size: 18px; font-variation-settings: \'FILL\' 1;">favorite</span>';
         btn.classList.add('text-primary');
         btn.classList.remove('text-white');
     } else {
         favorites.splice(index, 1);
-        // Style: Outline
+        // Style: Outline Heart
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>';
         btn.classList.remove('text-primary');
         btn.classList.add('text-white');
     }
     localStorage.setItem('favorites', JSON.stringify(favorites));
 
-    // If on favorites page, remove card
+    // If on favorites page, remove card dynamically
     if (window.location.pathname.endsWith('favorites.html')) {
         loadFavoritesPage();
     }
@@ -193,6 +238,9 @@ async function loadProducts() {
 
 // --- Page Logic ---
 
+/**
+ * Logic for Home Page: Loads featured products.
+ */
 function loadHome() {
     const container = document.getElementById('trending-container');
     if (!container) return;
@@ -203,6 +251,9 @@ function loadHome() {
     updateDOMTranslations(); // Re-run for dynamic content
 }
 
+/**
+ * Logic for Inventory Page: Loads all products with filtering.
+ */
 function loadInventory() {
     const container = document.getElementById('inventory-container');
     if (!container) return;
@@ -222,6 +273,9 @@ function loadInventory() {
     }
 }
 
+/**
+ * Filters inventory based on search term and category selection.
+ */
 function filterInventory() {
     const container = document.getElementById('inventory-container');
     if (!container) return;
@@ -243,6 +297,9 @@ function filterInventory() {
     updateDOMTranslations();
 }
 
+/**
+ * Logic for Favorites Page: Loads favorited products.
+ */
 function loadFavoritesPage() {
     const container = document.getElementById('favorites-container');
     if (!container) return;
@@ -261,6 +318,9 @@ function loadFavoritesPage() {
     updateDOMTranslations();
 }
 
+/**
+ * Logic for Details Page: Loads specific vehicle info by ID.
+ */
 function loadDetails() {
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get('id'));
@@ -286,7 +346,7 @@ function loadDetails() {
     document.getElementById('spec-trans').textContent = product.details.transmission;
     document.getElementById('spec-fuel').textContent = product.details.fuel;
 
-    // Gallery
+    // Gallery Thumbnails
     const galleryContainer = document.getElementById('gallery-thumbnails');
     if (galleryContainer && product.gallery) {
         galleryContainer.innerHTML = product.gallery.map((url, index) => `
@@ -300,6 +360,9 @@ function loadDetails() {
     updateDOMTranslations();
 }
 
+/**
+ * Updates the main image on the Details page when a thumbnail is clicked.
+ */
 window.changeMainImage = function(url, btn) {
     const mainImg = document.getElementById('main-image');
     if (mainImg) mainImg.src = url;
@@ -319,16 +382,18 @@ function loadContact() {
     updateDOMTranslations();
 }
 
-// --- Components ---
+// --- Component Rendering ---
 
+/**
+ * Generates the HTML for a single product card.
+ * @param {Object} product - The product data object
+ * @returns {string} HTML string
+ */
 function createProductCard(product) {
     const fav = isFavorite(product.id);
     const heartIcon = fav ? 'favorite' : 'favorite';
     const heartClass = fav ? 'text-primary' : 'text-white';
     const heartStyle = fav ? 'font-variation-settings: \'FILL\' 1;' : '';
-
-    // Fixed Light Mode Visibility: Removed conflicting 'bg-surface-dark' and 'text-white' defaults.
-    // Added 'bg-white dark:bg-card-dark' and 'text-slate-900 dark:text-white'
 
     return `
     <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">

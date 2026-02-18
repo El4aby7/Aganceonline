@@ -1,39 +1,82 @@
-# Aganceonline
+# Agance online
 
 A premium automotive dealership website featuring a modern, responsive design with dark/light mode, multi-language support (English/Arabic), and currency conversion (USD/EGP).
 
 ## Features
 
-*   **Branding:** Aganceonline
+*   **Branding:** Agance online
 *   **Theme:** Dark and Light mode toggle.
 *   **Language:** English and Arabic (RTL support).
 *   **Currency:** Toggle between USD ($) and EGP (L.E).
 *   **Data Driven:** Products and translations are managed via JSON files.
 *   **Responsive:** Fully responsive design using Tailwind CSS.
+*   **Favorites:** Persist favorite vehicles across sessions.
+*   **Inventory Filter:** Filter by category and search by name.
+
+## Setup & Running
+
+This project is a static website. You can run it using any static file server.
+
+### Prerequisites
+
+*   A modern web browser.
+*   A local web server (e.g., Python's `http.server`, `live-server`, or VS Code's Live Server extension).
+
+### Running Locally
+
+1.  Clone the repository.
+2.  Open a terminal in the project directory.
+3.  Run a local server:
+    ```bash
+    # Using Python 3
+    python3 -m http.server 8000
+    ```
+4.  Open `http://localhost:8000` in your browser.
+
+## Data Structure
+
+The application is data-driven. Below is the structure for the JSON configuration files found in the `data/` directory.
+
+### `data/product.json`
+
+This file contains the inventory data. Each item represents a vehicle.
+
+*   `id` (Number): Unique identifier for the vehicle.
+*   `name` (String): The display name of the car (e.g., "2023 Porsche 911 GT3").
+*   `price_usd` (Number): The price in US Dollars.
+*   `image_url` (String): Path to the main display image.
+*   `featured` (Boolean): If `true`, the car appears on the Home page trending section.
+*   `category` (String): The category for filtering (e.g., "Sports", "SUV", "Supercar").
+*   `description` (String): Full description text for the details page.
+*   `details` (Object):
+    *   `mileage`: String (e.g., "3.2k mi").
+    *   `transmission`: String (e.g., "Auto").
+    *   `fuel`: String (e.g., "Petrol").
+*   `gallery` (Array of Strings): Paths to additional images for the details page thumbnail gallery.
+
+### `data/translations.json`
+
+This file manages all text content for internationalization.
+
+*   `en` (Object): Key-value pairs for English text.
+*   `ar` (Object): Key-value pairs for Arabic text.
+
+**Key Naming Convention:**
+*   `header_*`: Header and navigation items.
+*   `hero_*`: Hero section text.
+*   `nav_*`: Navigation links.
+*   `filter_*`: Inventory filter labels.
+*   `price_*`: Currency symbols.
 
 ## Managing Content
 
 ### Updating Text & Translations
 
-All text content on the site is managed through the `data/translations.json` file.
-
 1.  Open `data/translations.json`.
-2.  You will see two main sections: `"en"` (English) and `"ar"` (Arabic).
-3.  Find the key corresponding to the text you want to change (e.g., `"hero_title"`).
-4.  Update the value for both languages.
-
-**Example:**
-```json
-"hero_title": "Driven by Performance.",
-```
-Change to:
-```json
-"hero_title": "Driven by Passion.",
-```
+2.  Find the key corresponding to the text you want to change (e.g., `"hero_title"`).
+3.  Update the value for both languages.
 
 ### Updating Products & Images
-
-The inventory is managed through `data/product.json`.
 
 1.  **Add Images:**
     *   Place your new vehicle images in the `assets/images/` folder.
@@ -41,37 +84,8 @@ The inventory is managed through `data/product.json`.
 
 2.  **Update Product Data:**
     *   Open `data/product.json`.
-    *   Each product is an object in the array.
-    *   To add a new car, copy an existing object and update the fields:
-        *   `id`: A unique number.
-        *   `name`: The name of the vehicle.
-        *   `price_usd`: The price in USD (the site automatically calculates EGP).
-        *   `image_url`: The path to the image (e.g., `assets/images/your-image.jpg`).
-        *   `featured`: Set to `true` to show on the homepage.
-        *   `details`: Update mileage, transmission, fuel, etc.
-        *   `gallery`: Add paths to additional images for the details page.
-
-**Example Product Entry:**
-```json
-{
-    "id": 101,
-    "name": "2024 New Car Model",
-    "price_usd": 50000,
-    "image_url": "assets/images/new-car.jpg",
-    "featured": true,
-    "category": "Sedan",
-    "description": "Description of the car...",
-    "details": {
-        "mileage": "0 mi",
-        "transmission": "Automatic",
-        "fuel": "Electric"
-    },
-    "gallery": [
-        "assets/images/new-car.jpg",
-        "assets/images/new-car-interior.jpg"
-    ]
-}
-```
+    *   Copy an existing product object and modify the fields.
+    *   Ensure the `id` is unique.
 
 ## Customization
 

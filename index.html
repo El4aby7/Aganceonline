@@ -1,3 +1,18 @@
+<!--
+    Agance online - Home Page
+    This page serves as the landing page for the dealership.
+
+    Structure:
+    - Head: Meta tags, Fonts, Tailwind CSS, Custom CSS.
+    - Body:
+        - Header: Navigation (Home, Inventory, Financing, Contact), Actions (Currency, Favorites, Language, Theme).
+        - Main:
+            - Hero Section: Large background image with branding and CTA buttons.
+            - Stats Section: Key metrics (Vehicles, Reviews, Support, Satisfaction).
+            - Trending Section: Dynamically loaded featured vehicles.
+        - Footer: Links, Social Media, Copyright.
+        - Scripts: Main application logic (js/script.js).
+-->
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -9,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (CDN for development/static deployment) -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
         tailwind.config = {
@@ -38,7 +53,7 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased transition-colors duration-300">
 
-    <!-- Header -->
+    <!-- Header Section -->
     <header class="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-white/10 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Logo -->
@@ -51,7 +66,7 @@
                 </a>
             </div>
 
-            <!-- Nav -->
+            <!-- Navigation Menu -->
             <nav class="hidden md:flex items-center gap-8">
                 <a href="index.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_home">Home</a>
                 <a href="inventory.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_inventory">Inventory</a>
@@ -59,7 +74,7 @@
                 <a href="contact.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_contact">Contact</a>
             </nav>
 
-            <!-- Actions -->
+            <!-- Action Buttons (Currency, Favorites, Language, Theme) -->
             <div class="flex items-center gap-4">
                 <button id="currency-toggle" class="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 dark:bg-white/10 hover:bg-primary hover:text-white transition-colors">
                     <span id="currency-text">L.E</span>
@@ -73,6 +88,7 @@
                 <button id="theme-toggle" class="flex items-center justify-center rounded-full p-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">light_mode</span>
                 </button>
+                <!-- Mobile Menu Button (Functionality handled via JS/CSS media queries) -->
                 <button class="md:hidden flex items-center justify-center rounded-full p-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
@@ -139,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Trending Section -->
+        <!-- Trending Section (Dynamic Content) -->
         <section class="py-20 bg-background-light dark:bg-surface-card">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between mb-10">
@@ -147,14 +163,15 @@
                     <a href="inventory.html" class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors" data-i18n="btn_browse">View Inventory</a>
                 </div>
 
+                <!-- Dynamic Content Container: Populated by loadHome() in js/script.js -->
                 <div id="trending-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Dynamic Content -->
+                    <!-- Cards will be injected here via JavaScript -->
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer Section -->
     <footer class="bg-white dark:bg-background-dark border-t border-gray-200 dark:border-white/10 pt-16 pb-8">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -166,7 +183,7 @@
                         <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white" data-i18n="header_title">Agance online</span>
                     </div>
                 </div>
-                <!-- Links (Simplified) -->
+                <!-- Additional footer links can be added here -->
             </div>
             <div class="border-t border-gray-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-gray-500" data-i18n="footer_rights">© 2024 Agance online. All rights reserved.</p>
@@ -174,6 +191,7 @@
         </div>
     </footer>
 
+    <!-- Main Script -->
     <script src="js/script.js"></script>
 </body>
 </html>
