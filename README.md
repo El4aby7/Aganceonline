@@ -13,26 +13,6 @@ A premium automotive dealership website featuring a modern, responsive design wi
 *   **Favorites:** Persist favorite vehicles across sessions.
 *   **Inventory Filter:** Filter by category and search by name.
 
-## Setup & Running
-
-This project is a static website. You can run it using any static file server.
-
-### Prerequisites
-
-*   A modern web browser.
-*   A local web server (e.g., Python's `http.server`, `live-server`, or VS Code's Live Server extension).
-
-### Running Locally
-
-1.  Clone the repository.
-2.  Open a terminal in the project directory.
-3.  Run a local server:
-    ```bash
-    # Using Python 3
-    python3 -m http.server 8000
-    ```
-4.  Open `http://localhost:8000` in your browser.
-
 ## Data Structure
 
 The application is data-driven. Below is the structure for the JSON configuration files found in the `data/` directory.
