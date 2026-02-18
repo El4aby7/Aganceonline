@@ -43,6 +43,9 @@ async function init() {
         updateCurrencyButtonText();
     }
 
+    // Setup Mobile Menu
+    setupMobileMenu();
+
     // Load Product Data
     await loadProducts();
 
@@ -58,6 +61,19 @@ async function init() {
         loadContact();
     } else if (path.endsWith('favorites.html')) {
         loadFavoritesPage();
+    }
+}
+
+// --- Mobile Menu Logic ---
+
+function setupMobileMenu() {
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+
+    if (btn && menu) {
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
     }
 }
 

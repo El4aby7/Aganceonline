@@ -87,9 +87,19 @@
                 <button id="theme-toggle" class="flex items-center justify-center rounded-full p-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">light_mode</span>
                 </button>
-                <button class="md:hidden flex items-center justify-center rounded-full p-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-primary transition-colors">
+                <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center rounded-full p-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Container -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 dark:text-gray-300 hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" data-i18n="nav_home">Home</a>
+                <a href="inventory.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 dark:text-gray-300 hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" data-i18n="nav_inventory">Inventory</a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 dark:text-gray-300 hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" data-i18n="nav_financing">Financing</a>
+                <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-900 dark:text-white hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" data-i18n="nav_contact">Contact</a>
             </div>
         </div>
     </header>
