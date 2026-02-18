@@ -1,0 +1,163 @@
+[
+    {
+        "id": 1,
+        "name": "2023 Porsche 911 GT3",
+        "price_usd": 275900,
+        "image_url": "assets/images/car-1.jpg",
+        "details": {
+            "mileage": "3.2k mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "Experience the pinnacle of driving performance with this pristine 2023 Porsche 911 GT3. Finished in striking Shark Blue, this vehicle embodies the perfect balance between track-ready capability and everyday usability.",
+        "category": "Sports",
+        "featured": true,
+        "gallery": [
+            "assets/images/car-1-thumb-0.jpg",
+            "assets/images/car-1-thumb-1.jpg",
+            "assets/images/car-1-thumb-2.jpg",
+            "assets/images/car-1-thumb-3.jpg",
+            "assets/images/car-1-thumb-4.jpg"
+        ]
+    },
+    {
+        "id": 2,
+        "name": "2022 Mercedes-AMG GT",
+        "price_usd": 145000,
+        "image_url": "assets/images/car-2.jpg",
+        "details": {
+            "mileage": "12k mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The Mercedes-AMG GT combines driving dynamics and first-class racetrack performance with superb everyday practicality.",
+        "category": "Coupe",
+        "featured": false
+    },
+    {
+        "id": 3,
+        "name": "2024 Lamborghini Hurac\u00e1n",
+        "price_usd": 320000,
+        "image_url": "assets/images/car-3.jpg",
+        "details": {
+            "mileage": "500 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The Lamborghini Hurac\u00e1n offers pure driving emotion with its V10 engine and iconic design.",
+        "category": "Supercar",
+        "featured": true
+    },
+    {
+        "id": 4,
+        "name": "2023 Ferrari F8 Tributo",
+        "price_usd": 305000,
+        "image_url": "assets/images/car-4.jpg",
+        "details": {
+            "mileage": "1.5k mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The Ferrari F8 Tributo is the new mid-rear-engined sports car that represents the highest expression of the Prancing Horse's classic two-seater berlinetta.",
+        "category": "Supercar",
+        "featured": true
+    },
+    {
+        "id": 5,
+        "name": "2022 Audi R8 V10",
+        "price_usd": 189900,
+        "image_url": "assets/images/car-5.jpg",
+        "details": {
+            "mileage": "8k mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The Audi R8 Coupe V10 performance quattro is the top model of the R8 model series.",
+        "category": "Supercar",
+        "featured": false
+    },
+    {
+        "id": 6,
+        "name": "2024 BMW M4 CSL",
+        "price_usd": 139900,
+        "image_url": "assets/images/car-6.jpg",
+        "details": {
+            "mileage": "200 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The BMW M4 CSL is an exclusive special edition of the high-performance sports car.",
+        "category": "Sports",
+        "featured": false
+    },
+    {
+        "id": 7,
+        "name": "2021 McLaren 720S",
+        "price_usd": 295000,
+        "image_url": "assets/images/car-7.jpg",
+        "details": {
+            "mileage": "4.1k mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "Lighter, stronger, faster. The 720S is a force of nature.",
+        "category": "Supercar",
+        "featured": true
+    },
+    {
+        "id": 8,
+        "name": "2023 Aston Martin Vantage",
+        "price_usd": 165000,
+        "image_url": "assets/images/car-8.jpg",
+        "details": {
+            "mileage": "900 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "The Aston Martin Vantage is a series of hand-built sports cars from the British automotive manufacturer Aston Martin.",
+        "category": "Sports",
+        "featured": false
+    },
+    {
+        "id": 9,
+        "name": "2023 GT Coup\u00e9",
+        "price_usd": 89900,
+        "image_url": "assets/images/car-9.jpg",
+        "details": {
+            "mileage": "0 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "A stunning example of modern engineering.",
+        "category": "New Arrival",
+        "featured": true
+    },
+    {
+        "id": 10,
+        "name": "2024 Royal SUV",
+        "price_usd": 115000,
+        "image_url": "assets/images/car-10.jpg",
+        "details": {
+            "mileage": "0 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "Luxury meets power in this Royal SUV.",
+        "category": "New Arrival",
+        "featured": true
+    },
+    {
+        "id": 11,
+        "name": "2023 Spider Convertible",
+        "price_usd": 145000,
+        "image_url": "assets/images/car-11.jpg",
+        "details": {
+            "mileage": "0 mi",
+            "transmission": "Auto",
+            "fuel": "Petrol"
+        },
+        "description": "Feel the wind in your hair with the Spider Convertible.",
+        "category": "New Arrival",
+        "featured": true
+    }
+]
