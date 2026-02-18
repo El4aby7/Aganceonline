@@ -447,3 +447,10 @@ function createProductCard(product) {
     </div>
     `;
 }
+
+/**
+ * Displays a demo message to the user.
+ */
+function showDemoMessage() {
+    alert("Thank you for your interest! This website is currently a demo, and this feature is not yet active.");
+}
