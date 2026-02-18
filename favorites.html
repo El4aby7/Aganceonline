@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory - Agance online</title>
+    <title>Favorites - Agance online</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
@@ -48,8 +48,8 @@
 
             <nav class="hidden md:flex items-center gap-8">
                 <a href="index.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_home">Home</a>
-                <a href="inventory.html" class="text-sm font-bold text-primary transition-colors" data-i18n="nav_inventory">Inventory</a>
-                <a href="favorites.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_favorites">Favorites</a>
+                <a href="inventory.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_inventory">Inventory</a>
+                <a href="favorites.html" class="text-sm font-bold text-primary transition-colors" data-i18n="nav_favorites">Favorites</a>
                 <a href="#" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_financing">Financing</a>
                 <a href="contact.html" class="text-sm font-medium text-slate-600 dark:text-gray-300 hover:text-primary transition-colors" data-i18n="nav_contact">Contact</a>
             </nav>
@@ -71,31 +71,12 @@
     <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
-                <h2 class="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2" data-i18n="nav_inventory">Inventory</h2>
-                <p class="text-gray-500 dark:text-gray-400 max-w-lg" data-i18n="hero_subtitle">Discover our curated collection of premium vehicles.</p>
+                <h2 class="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2" data-i18n="favorites_title">Your Favorites</h2>
+                <p class="text-gray-500 dark:text-gray-400 max-w-lg" data-i18n="hero_subtitle">Experience the pinnacle of automotive engineering.</p>
             </div>
         </div>
 
-        <div class="bg-white dark:bg-surface-dark border border-gray-200 dark:border-border-dark rounded-xl p-4 mb-8 sticky top-20 z-30 shadow-lg">
-            <div class="flex flex-col lg:flex-row gap-4 justify-between">
-                <div class="flex flex-wrap gap-3 flex-1">
-                     <input type="text" id="search-input" data-i18n-placeholder="search_placeholder" placeholder="Search inventory..." class="w-full md:flex-1 bg-gray-50 dark:bg-[#251d28] border border-gray-200 dark:border-border-dark rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary">
-
-                     <select id="filter-category" class="w-full md:w-48 bg-gray-50 dark:bg-[#251d28] border border-gray-200 dark:border-border-dark rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary">
-                        <option value="" data-i18n="filter_category_all">All Categories</option>
-                        <option value="Sedan" data-i18n="sedan">Sedan</option>
-                        <option value="SUV" data-i18n="suv">SUV</option>
-                        <option value="Coupe" data-i18n="coupe">Coupe</option>
-                        <option value="Convertible" data-i18n="convertible">Convertible</option>
-                        <option value="Sports" data-i18n="sports">Sports</option>
-                        <option value="Supercar" data-i18n="supercar">Supercar</option>
-                        <option value="New Arrival" data-i18n="new_arrival">New Arrival</option>
-                     </select>
-                </div>
-            </div>
-        </div>
-
-        <div id="inventory-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="favorites-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <!-- Dynamic Content -->
         </div>
     </main>
