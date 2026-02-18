@@ -4,6 +4,7 @@ let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
 let translations = {};
 let products = [];
+let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -13,7 +14,6 @@ async function init() {
     // Apply initial state
     setTheme(currentTheme);
     await setLanguage(currentLang); // This also fetches translations
-    // Currency will be applied after products are loaded or on toggle
 
     // Bind Global Event Listeners
     const themeToggle = document.getElementById('theme-toggle');
@@ -41,6 +41,8 @@ async function init() {
         loadDetails();
     } else if (path.endsWith('contact.html')) {
         loadContact();
+    } else if (path.endsWith('favorites.html')) {
+        loadFavoritesPage();
     }
 }
 
@@ -149,6 +151,35 @@ function formatPrice(usd) {
     }
 }
 
+// --- Favorites Management ---
+
+window.toggleFavorite = function(id, btn) {
+    const index = favorites.indexOf(id);
+    if (index === -1) {
+        favorites.push(id);
+        // Style: Filled
+        btn.innerHTML = '<span class="material-symbols-outlined filled-heart" style="font-size: 18px; font-variation-settings: \'FILL\' 1;">favorite</span>';
+        btn.classList.add('text-primary');
+        btn.classList.remove('text-white');
+    } else {
+        favorites.splice(index, 1);
+        // Style: Outline
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>';
+        btn.classList.remove('text-primary');
+        btn.classList.add('text-white');
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+
+    // If on favorites page, remove card
+    if (window.location.pathname.endsWith('favorites.html')) {
+        loadFavoritesPage();
+    }
+}
+
+function isFavorite(id) {
+    return favorites.includes(id);
+}
+
 // --- Data Loading ---
 
 async function loadProducts() {
@@ -177,25 +208,55 @@ function loadInventory() {
     if (!container) return;
 
     // Initial render
-    renderInventoryGrid(products);
+    filterInventory();
 
-    // Filter Logic (Simple)
-    const filterBrand = document.getElementById('filter-brand'); // Just a placeholder for now
+    // Bind Filter Events
     const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('filter-category');
 
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(term));
-            renderInventoryGrid(filtered);
-        });
+        searchInput.addEventListener('input', filterInventory);
+    }
+    if (categorySelect) {
+        categorySelect.addEventListener('change', filterInventory);
     }
 }
 
-function renderInventoryGrid(items) {
+function filterInventory() {
     const container = document.getElementById('inventory-container');
     if (!container) return;
-    container.innerHTML = items.map(product => createProductCard(product)).join('');
+
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('filter-category');
+
+    const term = searchInput ? searchInput.value.toLowerCase() : '';
+    const category = categorySelect ? categorySelect.value : '';
+
+    const filtered = products.filter(p => {
+        const matchesTerm = p.name.toLowerCase().includes(term);
+        const matchesCategory = category === '' || (p.category && p.category === category);
+        return matchesTerm && matchesCategory;
+    });
+
+    container.innerHTML = filtered.map(product => createProductCard(product)).join('');
+    updatePrices();
+    updateDOMTranslations();
+}
+
+function loadFavoritesPage() {
+    const container = document.getElementById('favorites-container');
+    if (!container) return;
+
+    const favProducts = products.filter(p => favorites.includes(p.id));
+
+    if (favProducts.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-20">
+            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">favorite_border</span>
+            <p class="text-xl text-gray-500 dark:text-gray-400" data-i18n="no_favorites">You haven't added any favorites yet.</p>
+        </div>`;
+    } else {
+        container.innerHTML = favProducts.map(product => createProductCard(product)).join('');
+    }
     updatePrices();
     updateDOMTranslations();
 }
@@ -206,7 +267,8 @@ function loadDetails() {
     const product = products.find(p => p.id === id);
 
     if (!product) {
-        document.getElementById('details-container').innerHTML = '<p class="text-center text-white">Product not found</p>';
+        const container = document.getElementById('details-container');
+        if(container) container.innerHTML = '<p class="text-center text-slate-900 dark:text-white">Product not found</p>';
         return;
     }
 
@@ -215,6 +277,7 @@ function loadDetails() {
     if (mainImg) mainImg.src = product.image_url;
 
     document.getElementById('vehicle-title').textContent = product.name;
+    document.getElementById('vehicle-title-crumb').textContent = product.name;
     document.getElementById('vehicle-price').setAttribute('data-price-usd', product.price_usd);
     document.getElementById('vehicle-desc').textContent = product.description;
 
@@ -259,15 +322,23 @@ function loadContact() {
 // --- Components ---
 
 function createProductCard(product) {
+    const fav = isFavorite(product.id);
+    const heartIcon = fav ? 'favorite' : 'favorite';
+    const heartClass = fav ? 'text-primary' : 'text-white';
+    const heartStyle = fav ? 'font-variation-settings: \'FILL\' 1;' : '';
+
+    // Fixed Light Mode Visibility: Removed conflicting 'bg-surface-dark' and 'text-white' defaults.
+    // Added 'bg-white dark:bg-card-dark' and 'text-slate-900 dark:text-white'
+
     return `
-    <div class="group bg-surface-dark border border-border-dark rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-glow hover:-translate-y-1 flex flex-col bg-white dark:bg-[#1e1621] border-gray-200 dark:border-[#2d2430]">
+    <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
         <div class="relative aspect-[16/10] overflow-hidden">
             <a href="details.html?id=${product.id}">
                 <img alt="${product.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
             </a>
             <div class="absolute top-3 right-3 z-20">
-                <button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-primary transition-colors">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>
+                <button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center ${heartClass} hover:text-primary transition-colors" onclick="toggleFavorite(${product.id}, this)">
+                    <span class="material-symbols-outlined" style="font-size: 18px; ${heartStyle}">${heartIcon}</span>
                 </button>
             </div>
              <div class="absolute bottom-3 left-3 z-20 flex gap-2">
@@ -278,14 +349,14 @@ function createProductCard(product) {
             <div class="flex justify-between items-start mb-2">
                 <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${product.name}</a>
             </div>
-            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-[#97b7c4] mb-4 font-medium">
+            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-4 font-medium">
                 <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${product.details.mileage}</span>
-                <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-border-dark"></span>
+                <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
                 <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${product.details.transmission}</span>
-                <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-border-dark"></span>
+                <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
                 <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${product.details.fuel}</span>
             </div>
-            <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-border-dark">
+            <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
                 <p class="text-xl font-black text-primary tracking-tight" data-price-usd="${product.price_usd}">$${product.price_usd.toLocaleString()}</p>
                 <a href="details.html?id=${product.id}" class="text-xs font-bold text-primary border border-primary px-3 py-1.5 rounded hover:bg-primary hover:text-white transition-all uppercase tracking-wide" data-i18n="view_details">
                     View Details
