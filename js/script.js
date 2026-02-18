@@ -9,7 +9,7 @@
  */
 
 // --- Constants & Global Variables ---
-const USD_TO_EGP = 50; // Fixed exchange rate
+const USD_TO_EGP = 47.02; // Fixed exchange rate
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
