@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.text-glow {
+    text-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Custom Scrollbar for the page */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #150d17;
+}
+::-webkit-scrollbar-thumb {
+    background: #2d2430;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ee2122;
+}
+
+/* RTL Support Tweaks */
+[dir="rtl"] .material-symbols-outlined {
+    /* Some icons might need flipping if they are directional, but most are universal */
+}
+
+[dir="rtl"] {
+    font-family: 'Inter', sans-serif; /* Use a better Arabic font if available, but Inter supports Arabic characters mostly or fallback */
+}
