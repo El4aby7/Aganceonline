@@ -55,4 +55,4 @@ Text content is stored in `data/translations.json` for internationalization.
 
 ## Customization
 
-*   **Currency Rate:** The exchange rate is defined in `js/script.js` as `const USD_TO_EGP = 47.02;`. Update this value to change the conversion rate.
+*   **Currency Rate:** The exchange rate is managed via the **Admin Dashboard** in the "Settings" tab. It is stored in the Supabase `app_settings` table.

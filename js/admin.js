@@ -14,8 +14,10 @@ const userEmailSpan = document.getElementById('user-email');
 
 const tabProducts = document.getElementById('tab-products');
 const tabInquiries = document.getElementById('tab-inquiries');
+const tabSettings = document.getElementById('tab-settings');
 const viewProducts = document.getElementById('view-products');
 const viewInquiries = document.getElementById('view-inquiries');
+const viewSettings = document.getElementById('view-settings');
 
 const productModal = document.getElementById('product-modal');
 const productForm = document.getElementById('product-form');
@@ -39,6 +41,7 @@ async function initAdmin() {
 
     tabProducts.addEventListener('click', () => switchTab('products'));
     tabInquiries.addEventListener('click', () => switchTab('inquiries'));
+    tabSettings.addEventListener('click', () => switchTab('settings'));
 
     const filterSelect = document.getElementById('filter-inquiries');
     if (filterSelect) {
@@ -49,6 +52,9 @@ async function initAdmin() {
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('product-form').addEventListener('submit', handleSaveProduct);
+
+    // Settings
+    document.getElementById('settings-form').addEventListener('submit', handleSaveSettings);
 }
 
 // --- Auth Logic ---
@@ -95,22 +101,33 @@ async function handleLogout() {
 // --- Tab Logic ---
 
 function switchTab(tab) {
+    // Hide all
+    viewProducts.classList.add('hidden');
+    viewInquiries.classList.add('hidden');
+    viewSettings.classList.add('hidden');
+
+    // Reset tabs
+    [tabProducts, tabInquiries, tabSettings].forEach(t => {
+        t.classList.remove('border-primary', 'text-primary');
+        t.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    // Show active
     if (tab === 'products') {
         viewProducts.classList.remove('hidden');
-        viewInquiries.classList.add('hidden');
         tabProducts.classList.add('border-primary', 'text-primary');
         tabProducts.classList.remove('border-transparent', 'text-gray-500');
-        tabInquiries.classList.remove('border-primary', 'text-primary');
-        tabInquiries.classList.add('border-transparent', 'text-gray-500');
         loadProducts();
-    } else {
-        viewProducts.classList.add('hidden');
+    } else if (tab === 'inquiries') {
         viewInquiries.classList.remove('hidden');
         tabInquiries.classList.add('border-primary', 'text-primary');
         tabInquiries.classList.remove('border-transparent', 'text-gray-500');
-        tabProducts.classList.remove('border-primary', 'text-primary');
-        tabProducts.classList.add('border-transparent', 'text-gray-500');
         loadInquiries();
+    } else if (tab === 'settings') {
+        viewSettings.classList.remove('hidden');
+        tabSettings.classList.add('border-primary', 'text-primary');
+        tabSettings.classList.remove('border-transparent', 'text-gray-500');
+        loadSettings();
     }
 }
 
@@ -492,3 +509,73 @@ window.deleteInquiry = async function(id) {
         filterInquiries();
     }
 };
+
+// --- Settings Logic ---
+
+async function loadSettings() {
+    const input = document.getElementById('setting-usd-egp');
+    const btn = document.getElementById('save-settings-btn');
+
+    input.disabled = true;
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+
+    const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'USD_TO_EGP')
+        .single();
+
+    if (error) {
+        console.error(error);
+        if (error.code !== 'PGRST116') { // PGRST116 is "No rows found"
+            alert('Failed to load settings');
+        }
+        input.value = '50'; // Default
+    } else {
+        input.value = data.value;
+    }
+
+    input.disabled = false;
+    btn.disabled = false;
+    btn.textContent = 'Update';
+}
+
+// --- Exports for Testing ---
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        loadSettings,
+        handleSaveSettings
+    };
+}
+
+async function handleSaveSettings(e) {
+    e.preventDefault();
+    const input = document.getElementById('setting-usd-egp');
+    const btn = document.getElementById('save-settings-btn');
+
+    const newValue = input.value;
+    if (!newValue || isNaN(newValue)) {
+        alert('Please enter a valid number');
+        return;
+    }
+
+    input.disabled = true;
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'USD_TO_EGP', value: newValue });
+
+    if (error) {
+        console.error(error);
+        alert('Failed to save settings: ' + error.message);
+    } else {
+        alert('Exchange rate updated successfully!');
+    }
+
+    input.disabled = false;
+    btn.disabled = false;
+    btn.textContent = 'Update';
+}

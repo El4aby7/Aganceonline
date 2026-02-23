@@ -9,7 +9,7 @@
  */
 
 // --- Constants & Global Variables ---
-const USD_TO_EGP = 47.02; // Fixed exchange rate
+let usdToEgpRate = 50; // Default fallback exchange rate
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
@@ -46,7 +46,8 @@ async function init() {
     // Setup Mobile Menu
     setupMobileMenu();
 
-    // Load Product Data
+    // Load Data
+    await fetchExchangeRate();
     await loadProducts();
 
     // Route execution to specific page logic based on URL
@@ -203,7 +204,28 @@ function formatPrice(usd) {
         return currentLang === 'en' && symbol === 'USD' ? `$${usd.toLocaleString()}` : `${usd.toLocaleString()} ${symbol}`;
     } else {
         const symbol = (translations[currentLang] && translations[currentLang].price_egp) || 'L.E';
-        return `${(usd * USD_TO_EGP).toLocaleString()} ${symbol}`;
+        return `${(usd * usdToEgpRate).toLocaleString()} ${symbol}`;
+    }
+}
+
+/**
+ * Fetches the current USD to EGP exchange rate from Supabase.
+ * Falls back to default if fetching fails.
+ */
+async function fetchExchangeRate() {
+    try {
+        const { data, error } = await supabase
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'USD_TO_EGP')
+            .single();
+
+        if (error) throw error;
+        if (data && data.value) {
+            usdToEgpRate = parseFloat(data.value);
+        }
+    } catch (error) {
+        console.error('Failed to fetch exchange rate, using fallback:', error);
     }
 }
 
@@ -564,4 +586,14 @@ function createProductCard(product) {
  */
 function showDemoMessage() {
     alert("Thank you for your interest! This website is currently a demo, and this feature is not yet active.");
+}
+
+// --- Exports for Testing ---
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        formatPrice,
+        fetchExchangeRate,
+        init,
+        loadProducts
+    };
 }
