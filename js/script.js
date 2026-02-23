@@ -245,10 +245,17 @@ function isFavorite(id) {
 
 async function loadProducts() {
     try {
-        const response = await fetch('data/product.json');
-        products = await response.json();
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        products = data;
     } catch (error) {
         console.error('Failed to load products', error);
+        // Fallback or empty state
+        products = [];
     }
 }
 
@@ -396,7 +403,111 @@ window.changeMainImage = function(url, btn) {
 function loadContact() {
     // Just ensure translations are applied
     updateDOMTranslations();
+
+    const form = document.getElementById('contact-form');
+    if (form) {
+        form.addEventListener('submit', handleContactSubmit);
+    }
 }
+
+async function handleContactSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Sending...';
+    btn.disabled = true;
+
+    try {
+        const name = document.getElementById('c-name').value;
+        const email = document.getElementById('c-email').value;
+        const phone = document.getElementById('c-phone').value;
+        const interest = document.getElementById('c-interest').value;
+        const message = document.getElementById('c-message').value;
+
+        const { error } = await supabase.from('inquiries').insert({
+            name,
+            email,
+            phone,
+            interest,
+            message,
+            vehicle_name: 'Contact Page Inquiry'
+        });
+
+        if (error) throw error;
+
+        alert('Thank you! Your message has been sent. We will contact you shortly.');
+        e.target.reset();
+
+    } catch (err) {
+        console.error(err);
+        alert('Failed to send message: ' + err.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// --- Inquiry Modal Logic (Details Page) ---
+
+window.openInquiryModal = function() {
+    const modal = document.getElementById('inquiry-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Pre-fill vehicle name if possible
+        const vehicleTitle = document.getElementById('vehicle-title');
+        if (vehicleTitle) {
+            document.getElementById('inq-vehicle').value = vehicleTitle.textContent;
+        }
+    }
+};
+
+window.closeInquiryModal = function() {
+    const modal = document.getElementById('inquiry-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Bind inquiry modal form if it exists
+    const inqForm = document.getElementById('inquiry-form');
+    if (inqForm) {
+        inqForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+
+            try {
+                const name = document.getElementById('inq-name').value;
+                const email = document.getElementById('inq-email').value;
+                const phone = document.getElementById('inq-phone').value;
+                const message = document.getElementById('inq-message').value;
+                const vehicle = document.getElementById('inq-vehicle').value;
+
+                const { error } = await supabase.from('inquiries').insert({
+                    name,
+                    email,
+                    phone,
+                    interest: 'Vehicle Inquiry',
+                    message,
+                    vehicle_name: vehicle
+                });
+
+                if (error) throw error;
+
+                alert('Inquiry sent successfully!');
+                e.target.reset();
+                closeInquiryModal();
+
+            } catch (err) {
+                alert('Error sending inquiry: ' + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+});
 
 // --- Component Rendering ---
 
