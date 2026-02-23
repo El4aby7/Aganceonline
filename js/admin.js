@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentUser = null;
 let currentProducts = [];
+let currentInquiries = [];
 
 // DOM Elements
 const loginSection = document.getElementById('login-section');
@@ -38,6 +39,11 @@ async function initAdmin() {
 
     tabProducts.addEventListener('click', () => switchTab('products'));
     tabInquiries.addEventListener('click', () => switchTab('inquiries'));
+
+    const filterSelect = document.getElementById('filter-inquiries');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterInquiries);
+    }
 
     document.getElementById('add-product-btn').addEventListener('click', () => openModal());
     document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -364,7 +370,7 @@ async function handleSaveProduct(e) {
 
 async function loadInquiries() {
     const tbody = document.getElementById('inquiries-table-body');
-    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">Loading...</td></tr>';
 
     const { data, error } = await supabase
         .from('inquiries')
@@ -373,33 +379,116 @@ async function loadInquiries() {
 
     if (error) {
         console.error(error);
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Failed to load inquiries</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load inquiries</td></tr>';
         return;
     }
 
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">No inquiries yet.</td></tr>';
+    currentInquiries = data;
+    filterInquiries();
+}
+
+function filterInquiries() {
+    const filter = document.getElementById('filter-inquiries').value; // all, resolved, unresolved
+    let filtered = currentInquiries;
+
+    if (filter === 'resolved') {
+        filtered = currentInquiries.filter(i => i.resolved === true);
+    } else if (filter === 'unresolved') {
+        filtered = currentInquiries.filter(i => i.resolved !== true);
+    }
+
+    renderInquiries(filtered);
+}
+
+function renderInquiries(inquiries) {
+    const tbody = document.getElementById('inquiries-table-body');
+
+    if (inquiries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">No inquiries found.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = data.map(inq => `
-        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+    // Simple XSS protection
+    const escapeHtml = (unsafe) => {
+        if (!unsafe) return '';
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    };
+
+    tbody.innerHTML = inquiries.map(inq => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${inq.resolved ? 'opacity-60 bg-gray-50 dark:bg-white/5' : ''}">
+            <td class="px-6 py-4">
+                 <input type="checkbox" ${inq.resolved ? 'checked' : ''} onchange="toggleResolved(${inq.id}, this)" class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" title="Mark as Resolved">
+            </td>
             <td class="px-6 py-4 text-gray-500 text-xs whitespace-nowrap">
                 ${new Date(inq.created_at).toLocaleDateString()}
             </td>
-            <td class="px-6 py-4 font-medium">${inq.name}</td>
+            <td class="px-6 py-4 font-medium">${escapeHtml(inq.name)}</td>
             <td class="px-6 py-4 text-sm">
                 <div class="flex flex-col">
-                    <a href="mailto:${inq.email}" class="text-blue-500 hover:underline">${inq.email}</a>
-                    <span class="text-gray-500">${inq.phone || '-'}</span>
+                    <a href="mailto:${escapeHtml(inq.email)}" class="text-blue-500 hover:underline">${escapeHtml(inq.email)}</a>
+                    <span class="text-gray-500">${escapeHtml(inq.phone) || '-'}</span>
                 </div>
             </td>
             <td class="px-6 py-4 text-sm">
-                ${inq.vehicle_name ? `<span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">${inq.vehicle_name}</span>` : '<span class="text-gray-400">-</span>'}
+                ${inq.vehicle_name ? `<span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">${escapeHtml(inq.vehicle_name)}</span>` : '<span class="text-gray-400">-</span>'}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${inq.message}">
-                ${inq.message || '-'}
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${escapeHtml(inq.message)}">
+                ${escapeHtml(inq.message) || '-'}
+            </td>
+            <td class="px-6 py-4 text-right">
+                <button onclick="deleteInquiry(${inq.id})" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-white/10 transition-colors" title="Delete Inquiry">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
             </td>
         </tr>
     `).join('');
 }
+
+window.toggleResolved = async function(id, checkbox) {
+    const resolved = checkbox.checked;
+
+    // Optimistic UI update (optional, but good for UX)
+    const row = checkbox.closest('tr');
+    if (resolved) {
+        row.classList.add('opacity-60', 'bg-gray-50', 'dark:bg-white/5');
+    } else {
+        row.classList.remove('opacity-60', 'bg-gray-50', 'dark:bg-white/5');
+    }
+
+    const { error } = await supabase
+        .from('inquiries')
+        .update({ resolved })
+        .eq('id', id);
+
+    if (error) {
+        alert('Error updating status: ' + error.message);
+        checkbox.checked = !resolved; // Revert
+        return;
+    }
+
+    // Update local state
+    const inq = currentInquiries.find(i => i.id === id);
+    if (inq) inq.resolved = resolved;
+
+    // Refresh view if filtering is active (e.g. if viewing 'unresolved' and we mark as resolved, it should disappear)
+    filterInquiries();
+};
+
+window.deleteInquiry = async function(id) {
+    if (!confirm('Are you sure you want to delete this inquiry?')) return;
+
+    const { error } = await supabase.from('inquiries').delete().eq('id', id);
+
+    if (error) {
+        alert('Error deleting: ' + error.message);
+    } else {
+        // Remove from local state
+        currentInquiries = currentInquiries.filter(i => i.id !== id);
+        filterInquiries();
+    }
+};
