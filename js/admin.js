@@ -177,6 +177,7 @@ window.deleteProduct = async function(id) {
 // --- Modal & Form Logic ---
 
 let editingId = null;
+let currentGallery = [];
 
 function openModal(product = null) {
     productModal.classList.remove('hidden');
@@ -199,16 +200,43 @@ function openModal(product = null) {
             document.getElementById('p-trans').value = product.details.transmission || '';
             document.getElementById('p-fuel').value = product.details.fuel || '';
         }
+
+        // Handle Gallery
+        currentGallery = product.gallery || [];
+        renderGallery();
+
     } else {
         editingId = null;
         title.textContent = 'Add New Vehicle';
         form.reset();
+        currentGallery = [];
+        renderGallery();
     }
+
+    document.getElementById('p-gallery-upload').value = '';
 }
 
 function closeModal() {
     productModal.classList.add('hidden');
 }
+
+function renderGallery() {
+    const container = document.getElementById('gallery-preview');
+    container.innerHTML = currentGallery.map((url, index) => `
+        <div class="relative group h-24 w-full rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
+            <img src="${url}" class="h-full w-full object-cover" alt="gallery">
+            <button type="button" onclick="deleteGalleryImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+    `).join('');
+}
+
+window.deleteGalleryImage = function(index) {
+    if (!confirm('Remove this image from gallery?')) return;
+    currentGallery.splice(index, 1);
+    renderGallery();
+};
 
 async function handleSaveProduct(e) {
     e.preventDefault();
@@ -266,13 +294,42 @@ async function handleSaveProduct(e) {
 
         if (imageUrl) {
             payload.image_url = imageUrl;
-            // Also initialize gallery with main image if empty
-            if (!editingId) payload.gallery = [imageUrl];
         } else if (!editingId) {
             // New product but no image? Use placeholder
             payload.image_url = 'https://placehold.co/600x400?text=No+Image';
-            payload.gallery = [];
         }
+
+        // 2b. Handle Gallery Upload
+        const galleryInput = document.getElementById('p-gallery-upload');
+        if (galleryInput.files.length > 0) {
+            for (const file of galleryInput.files) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `gallery-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `public/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('vehicle-images')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error('Gallery upload error:', uploadError);
+                    continue;
+                }
+
+                const { data: publicData } = supabase.storage
+                    .from('vehicle-images')
+                    .getPublicUrl(filePath);
+
+                currentGallery.push(publicData.publicUrl);
+            }
+        }
+
+        // If new product and gallery is empty but main image exists, add main image to gallery
+        if (!editingId && currentGallery.length === 0 && payload.image_url && !payload.image_url.includes('placehold.co')) {
+            currentGallery.push(payload.image_url);
+        }
+
+        payload.gallery = currentGallery;
 
         // 4. Insert or Update
         let error;
