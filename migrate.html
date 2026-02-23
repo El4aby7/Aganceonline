@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Migration Tool</title>
+    <!-- Tailwind for basic styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 p-10 font-sans">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4">Migrate Data to Supabase</h1>
+        <p class="mb-4 text-gray-600">
+            This tool will read your local <code class="bg-gray-200 px-1 rounded">data/product.json</code> file and upload all products to your Supabase database.
+        </p>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+            <p class="font-bold text-yellow-700">Important:</p>
+            <p class="text-yellow-600">Ensure you have run the SQL setup script in your Supabase Dashboard before clicking the button below.</p>
+        </div>
+
+        <button id="migrate-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">
+            Start Migration
+        </button>
+
+        <div id="status" class="mt-6 space-y-2 text-sm font-mono max-h-60 overflow-y-auto border border-gray-200 p-4 rounded bg-gray-50">
+            <p class="text-gray-400">Waiting to start...</p>
+        </div>
+    </div>
+
+    <!-- Configuration -->
+    <script src="js/supabase-config.js"></script>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('migrate-btn');
+
+        function log(msg, type = 'info') {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if (type === 'error') p.classList.add('text-red-600');
+            if (type === 'success') p.classList.add('text-green-600');
+            statusDiv.appendChild(p);
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        btn.addEventListener('click', async () => {
+            if (!supabase) {
+                log('Error: Supabase client not initialized.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Migrating...';
+            log('Fetching local product data...');
+
+            try {
+                const response = await fetch('data/product.json');
+                if (!response.ok) throw new Error('Failed to load product.json');
+
+                const products = await response.json();
+                log(`Found ${products.length} products. Starting upload...`);
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const p of products) {
+                    // Check if product already exists (by name, assuming unique names for simplicity)
+                    // Or just insert. Let's just insert for now.
+
+                    // Construct the object to match our SQL table schema
+                    const newProduct = {
+                        name: p.name,
+                        price_usd: p.price_usd,
+                        image_url: p.image_url,
+                        featured: p.featured,
+                        category: p.category,
+                        description: p.description,
+                        details: p.details, // JSONB handles objects automatically
+                        gallery: p.gallery
+                    };
+
+                    const { error } = await supabase.from('products').insert(newProduct);
+
+                    if (error) {
+                        log(`Failed to insert "${p.name}": ${error.message}`, 'error');
+                        failCount++;
+                    } else {
+                        log(`Successfully migrated: ${p.name}`, 'success');
+                        successCount++;
+                    }
+                }
+
+                log(`Migration complete! Success: ${successCount}, Failed: ${failCount}`, 'success');
+
+            } catch (err) {
+                log(`Critical Error: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Start Migration';
+            }
+        });
+    </script>
+</body>
+</html>

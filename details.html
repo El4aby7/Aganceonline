@@ -162,7 +162,7 @@
 
                     <!-- CTA Buttons -->
                     <div class="grid grid-cols-1 gap-4">
-                        <button onclick="showDemoMessage()" class="bg-primary hover:bg-primary-dark text-white h-14 rounded-lg font-bold text-lg uppercase tracking-wide shadow-lg shadow-red-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                        <button onclick="openInquiryModal()" class="bg-primary hover:bg-primary-dark text-white h-14 rounded-lg font-bold text-lg uppercase tracking-wide shadow-lg shadow-red-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">mail</span>
                             <span data-i18n="inquire_now">Inquire Now</span>
                         </button>
@@ -201,7 +201,46 @@
         </div>
     </main>
 
+    <!-- Inquiry Modal -->
+    <div id="inquiry-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeInquiryModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-surface-card w-full max-w-md rounded-xl shadow-2xl border border-gray-200 dark:border-white/10 overflow-hidden relative">
+                <button onclick="closeInquiryModal()" class="absolute top-4 right-4 text-gray-500 hover:text-primary transition-colors z-10">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <div class="p-6 border-b border-gray-200 dark:border-white/10">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white" data-i18n="inquire_now">Inquire Now</h3>
+                </div>
+                <form id="inquiry-form" class="p-6 space-y-4">
+                    <input type="hidden" id="inq-vehicle">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-slate-600 dark:text-gray-300" data-i18n="form_name">Full Name</label>
+                        <input type="text" id="inq-name" required class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-slate-600 dark:text-gray-300" data-i18n="form_email">Email</label>
+                        <input type="email" id="inq-email" required class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-slate-600 dark:text-gray-300" data-i18n="form_phone">Phone</label>
+                        <input type="tel" id="inq-phone" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-slate-600 dark:text-gray-300" data-i18n="form_message">Message</label>
+                        <textarea id="inq-message" rows="3" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-primary hover:bg-red-600 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-red-900/20" data-i18n="btn_submit">
+                        Submit Inquiry
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

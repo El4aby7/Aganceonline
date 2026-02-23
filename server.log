@@ -1,0 +1,16 @@
+127.0.0.1 - - [23/Feb/2026 08:54:14] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:14] "GET /js/admin.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:14] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:35] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:35] "GET /js/admin.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:35] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:55] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:55] "GET /js/admin.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:54:55] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:55:10] "HEAD /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:55:27] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:55:27] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:55:27] "GET /js/admin.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:56:06] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:56:06] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 08:56:06] "GET /js/admin.js HTTP/1.1" 200 -

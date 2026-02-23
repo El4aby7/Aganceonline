@@ -120,26 +120,26 @@
             <div class="flex flex-col gap-8">
                 <div class="bg-white/50 dark:bg-surface-dark/50 p-8 rounded-xl border border-gray-200 dark:border-border-dark shadow-lg backdrop-blur-sm">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6" data-i18n="nav_contact">Send us a message</h2>
-                    <form class="flex flex-col gap-5">
+                    <form id="contact-form" class="flex flex-col gap-5">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <label class="flex flex-col gap-2">
                                 <span class="text-sm font-medium text-slate-600 dark:text-gray-300" data-i18n="form_name">Full Name</span>
-                                <input class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="text" data-i18n-placeholder="form_name"/>
+                                <input id="c-name" class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="text" required data-i18n-placeholder="form_name"/>
                             </label>
                             <label class="flex flex-col gap-2">
                                 <span class="text-sm font-medium text-slate-600 dark:text-gray-300" data-i18n="form_email">Email Address</span>
-                                <input class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="email" data-i18n-placeholder="form_email"/>
+                                <input id="c-email" class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="email" required data-i18n-placeholder="form_email"/>
                             </label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <label class="flex flex-col gap-2">
                                 <span class="text-sm font-medium text-slate-600 dark:text-gray-300" data-i18n="form_phone">Phone Number</span>
-                                <input class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="tel" data-i18n-placeholder="form_phone"/>
+                                <input id="c-phone" class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300" type="tel" data-i18n-placeholder="form_phone"/>
                             </label>
                             <label class="flex flex-col gap-2">
                                 <span class="text-sm font-medium text-slate-600 dark:text-gray-300" data-i18n="form_interest">Interest</span>
                                 <div class="relative">
-                                    <select class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300 appearance-none">
+                                    <select id="c-interest" class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg px-4 h-12 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all duration-300 appearance-none">
                                         <option>Sales Inquiry</option>
                                         <option>Service Appointment</option>
                                     </select>
@@ -148,9 +148,9 @@
                         </div>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-slate-600 dark:text-gray-300" data-i18n="form_message">Message</span>
-                            <textarea class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg p-4 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none transition-all duration-300" rows="4" data-i18n-placeholder="form_message"></textarea>
+                            <textarea id="c-message" class="w-full bg-gray-50 dark:bg-[#0f0811] border border-gray-200 dark:border-border-dark rounded-lg p-4 text-slate-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none transition-all duration-300" rows="4" required data-i18n-placeholder="form_message"></textarea>
                         </label>
-                        <button onclick="showDemoMessage()" class="mt-2 w-full h-12 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 group" type="button">
+                        <button class="mt-2 w-full h-12 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 group" type="submit">
                             <span data-i18n="btn_submit">Submit Inquiry</span>
                         </button>
                     </form>
@@ -196,6 +196,8 @@
     </main>
 
     <!-- Main Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
