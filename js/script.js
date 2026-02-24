@@ -49,19 +49,25 @@ async function init() {
     // Load Data
     await fetchExchangeRate();
     await loadProducts();
+    await loadGlobalSettings();
 
     // Route execution to specific page logic based on URL
     const path = window.location.pathname;
     if (path.endsWith('index.html') || path.endsWith('/')) {
         loadHome();
+        if (path.endsWith('index.html')) window.history.replaceState(null, '', path.replace('index.html', 'main'));
     } else if (path.endsWith('inventory.html')) {
         loadInventory();
+        window.history.replaceState(null, '', path.replace('.html', ''));
     } else if (path.endsWith('details.html')) {
         loadDetails();
+        window.history.replaceState(null, '', path.replace('.html', '') + window.location.search);
     } else if (path.endsWith('contact.html')) {
         loadContact();
+        window.history.replaceState(null, '', path.replace('.html', ''));
     } else if (path.endsWith('favorites.html')) {
         loadFavoritesPage();
+        window.history.replaceState(null, '', path.replace('.html', ''));
     }
 }
 
@@ -265,6 +271,42 @@ function isFavorite(id) {
 
 // --- Data Loading ---
 
+async function loadGlobalSettings() {
+    try {
+        const { data, error } = await supabase
+            .from('app_settings')
+            .select('key, value');
+
+        if (error) throw error;
+
+        const settings = {};
+        if (data) {
+            data.forEach(item => settings[item.key] = item.value);
+        }
+
+        // Apply Social Media Links
+        const tiktok = document.getElementById('social-tiktok');
+        const fb = document.getElementById('social-facebook');
+        const insta = document.getElementById('social-instagram');
+
+        if (tiktok && settings['SOCIAL_TIKTOK']) tiktok.href = settings['SOCIAL_TIKTOK'];
+        if (fb && settings['SOCIAL_FACEBOOK']) fb.href = settings['SOCIAL_FACEBOOK'];
+        if (insta && settings['SOCIAL_INSTAGRAM']) insta.href = settings['SOCIAL_INSTAGRAM'];
+
+        // Apply Location
+        const locPin = document.getElementById('location-pin-link');
+        const mapContainer = document.getElementById('map-container');
+
+        if (locPin && settings['LOCATION_PIN']) locPin.href = settings['LOCATION_PIN'];
+        if (mapContainer && settings['MAP_IMAGE']) {
+             mapContainer.style.backgroundImage = `url("${settings['MAP_IMAGE']}")`;
+        }
+
+    } catch (error) {
+        console.error('Failed to load global settings', error);
+    }
+}
+
 async function loadProducts() {
     try {
         const { data, error } = await supabase
@@ -393,12 +435,22 @@ function loadDetails() {
 
     // Gallery Thumbnails
     const galleryContainer = document.getElementById('gallery-thumbnails');
-    if (galleryContainer && product.gallery) {
-        galleryContainer.innerHTML = product.gallery.map((url, index) => `
-            <button class="relative flex-none w-24 aspect-[4/3] rounded-lg overflow-hidden hover:opacity-100 transition-opacity ${index === 0 ? 'ring-2 ring-primary' : 'opacity-60'}" onclick="changeMainImage('${url}', this)">
-                <img src="${url}" class="w-full h-full object-cover" alt="Thumbnail">
-            </button>
-        `).join('');
+    if (galleryContainer) {
+        let gallery = product.gallery || [];
+        // Ensure main image is in the gallery, prepended if missing
+        if (product.image_url && !gallery.includes(product.image_url)) {
+            gallery = [product.image_url, ...gallery];
+        }
+
+        if (gallery.length > 0) {
+            galleryContainer.innerHTML = gallery.map((url) => {
+                const isActive = url === product.image_url;
+                return `
+                <button class="relative flex-none w-24 aspect-[4/3] rounded-lg overflow-hidden hover:opacity-100 transition-opacity ${isActive ? 'ring-2 ring-primary' : 'opacity-60'}" onclick="changeMainImage('${url}', this)">
+                    <img src="${url}" class="w-full h-full object-cover" alt="Thumbnail">
+                </button>
+            `}).join('');
+        }
     }
 
     updatePrices();

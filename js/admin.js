@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     initAdmin();
+    // Cosmetic URL Cleanup
+    const path = window.location.pathname;
+    if (path.endsWith('admin.html')) {
+        window.history.replaceState(null, '', path.replace('.html', ''));
+    }
 });
 
 let currentUser = null;
@@ -513,32 +518,47 @@ window.deleteInquiry = async function(id) {
 // --- Settings Logic ---
 
 async function loadSettings() {
-    const input = document.getElementById('setting-usd-egp');
-    const btn = document.getElementById('save-settings-btn');
+    const usdInput = document.getElementById('setting-usd-egp');
+    const tiktokInput = document.getElementById('setting-social-tiktok');
+    const fbInput = document.getElementById('setting-social-facebook');
+    const instaInput = document.getElementById('setting-social-instagram');
+    const locPinInput = document.getElementById('setting-location-pin');
+    const mapImgInput = document.getElementById('setting-map-image');
 
-    input.disabled = true;
-    btn.disabled = true;
-    btn.textContent = 'Loading...';
+    const btn = document.getElementById('save-settings-btn');
+    const inputs = [usdInput, tiktokInput, fbInput, instaInput, locPinInput, mapImgInput].filter(i => i);
+
+    inputs.forEach(i => i.disabled = true);
+    if(btn) {
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+    }
 
     const { data, error } = await supabase
         .from('app_settings')
-        .select('value')
-        .eq('key', 'USD_TO_EGP')
-        .single();
+        .select('key, value');
 
     if (error) {
         console.error(error);
-        if (error.code !== 'PGRST116') { // PGRST116 is "No rows found"
-            alert('Failed to load settings');
-        }
-        input.value = '50'; // Default
+        alert('Failed to load settings');
+        if(usdInput) usdInput.value = '50'; // Default
     } else {
-        input.value = data.value;
+        const settings = {};
+        data.forEach(item => settings[item.key] = item.value);
+
+        if (usdInput && settings['USD_TO_EGP']) usdInput.value = settings['USD_TO_EGP'];
+        if (tiktokInput && settings['SOCIAL_TIKTOK']) tiktokInput.value = settings['SOCIAL_TIKTOK'];
+        if (fbInput && settings['SOCIAL_FACEBOOK']) fbInput.value = settings['SOCIAL_FACEBOOK'];
+        if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
+        if (locPinInput && settings['LOCATION_PIN']) locPinInput.value = settings['LOCATION_PIN'];
+        if (mapImgInput && settings['MAP_IMAGE']) mapImgInput.value = settings['MAP_IMAGE'];
     }
 
-    input.disabled = false;
-    btn.disabled = false;
-    btn.textContent = 'Update';
+    inputs.forEach(i => i.disabled = false);
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = 'Save All Settings';
+    }
 }
 
 // --- Exports for Testing ---
@@ -551,31 +571,36 @@ if (typeof module !== 'undefined' && module.exports) {
 
 async function handleSaveSettings(e) {
     e.preventDefault();
-    const input = document.getElementById('setting-usd-egp');
     const btn = document.getElementById('save-settings-btn');
-
-    const newValue = input.value;
-    if (!newValue || isNaN(newValue)) {
-        alert('Please enter a valid number');
-        return;
+    const originalText = btn ? btn.textContent : 'Save';
+    if(btn) {
+        btn.textContent = 'Saving...';
+        btn.disabled = true;
     }
 
-    input.disabled = true;
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+    const updates = [
+        { key: 'USD_TO_EGP', value: document.getElementById('setting-usd-egp').value },
+        { key: 'SOCIAL_TIKTOK', value: document.getElementById('setting-social-tiktok').value },
+        { key: 'SOCIAL_FACEBOOK', value: document.getElementById('setting-social-facebook').value },
+        { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
+        { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
+        { key: 'MAP_IMAGE', value: document.getElementById('setting-map-image').value },
+    ];
 
-    const { error } = await supabase
-        .from('app_settings')
-        .upsert({ key: 'USD_TO_EGP', value: newValue });
+    try {
+        const { error } = await supabase
+            .from('app_settings')
+            .upsert(updates);
 
-    if (error) {
-        console.error(error);
-        alert('Failed to save settings: ' + error.message);
-    } else {
-        alert('Exchange rate updated successfully!');
+        if (error) throw error;
+        alert('Settings saved successfully!');
+    } catch (err) {
+        console.error(err);
+        alert('Failed to save settings: ' + err.message);
+    } finally {
+        if(btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
-
-    input.disabled = false;
-    btn.disabled = false;
-    btn.textContent = 'Update';
 }
