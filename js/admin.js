@@ -327,16 +327,25 @@ async function handleSaveProduct(e) {
 
             // Get current session for authorization
             const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                console.warn('No active session found. Aborting translation.');
+                alert('Your session has expired. Please refresh the page and log in again.');
+                throw new Error('Session expired');
+            }
+
             const { data, error } = await supabase.functions.invoke('translate-text', {
                 body: { text: textsToTranslate, target_lang: 'ar' },
-                headers: session ? {
-                    Authorization: `Bearer ${session.access_token}`
-                } : {}
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    // Explicitly include apikey for Gateway
+                    apikey: window.SUPABASE_ANON_KEY
+                }
             });
 
             if (error) {
                 console.error('Translation API Error:', error);
-                alert('Warning: Translation failed. check console for details.');
+                alert('Warning: Translation failed. Please check the console for details. The product will be saved without Arabic descriptions.');
             } else {
                 console.log('Translation API Response:', data);
                 if (data && data.translatedText && Array.isArray(data.translatedText)) {

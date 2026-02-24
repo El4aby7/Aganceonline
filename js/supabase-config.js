@@ -7,6 +7,9 @@
 const SUPABASE_URL = 'https://mmeuwvuvglvwxtforlcp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXV3dnV2Z2x2d3h0Zm9ybGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MjEwNTcsImV4cCI6MjA4NzM5NzA1N30.jJ7WERr0JVUPRBZOblwTYdBwSqGWeHOH6rVmQFeI5AE';
 
+// Expose key globally for admin usage
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
+
 // Initialize the client if the library is available
 if (typeof window.supabase !== 'undefined') {
     if (window.supabase.createClient) {
