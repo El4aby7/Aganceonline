@@ -524,6 +524,7 @@ async function loadSettings() {
     const instaInput = document.getElementById('setting-social-instagram');
     const locPinInput = document.getElementById('setting-location-pin');
     const mapImgInput = document.getElementById('setting-map-image');
+    const currentMapSpan = document.getElementById('current-map-image');
 
     const btn = document.getElementById('save-settings-btn');
     const inputs = [usdInput, tiktokInput, fbInput, instaInput, locPinInput, mapImgInput].filter(i => i);
@@ -551,7 +552,12 @@ async function loadSettings() {
         if (fbInput && settings['SOCIAL_FACEBOOK']) fbInput.value = settings['SOCIAL_FACEBOOK'];
         if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
         if (locPinInput && settings['LOCATION_PIN']) locPinInput.value = settings['LOCATION_PIN'];
-        if (mapImgInput && settings['MAP_IMAGE']) mapImgInput.value = settings['MAP_IMAGE'];
+
+        if (settings['MAP_IMAGE']) {
+             if(currentMapSpan) currentMapSpan.textContent = settings['MAP_IMAGE'].split('/').pop();
+        } else {
+             if(currentMapSpan) currentMapSpan.textContent = 'Default';
+        }
     }
 
     inputs.forEach(i => i.disabled = false);
@@ -578,22 +584,44 @@ async function handleSaveSettings(e) {
         btn.disabled = true;
     }
 
-    const updates = [
-        { key: 'USD_TO_EGP', value: document.getElementById('setting-usd-egp').value },
-        { key: 'SOCIAL_TIKTOK', value: document.getElementById('setting-social-tiktok').value },
-        { key: 'SOCIAL_FACEBOOK', value: document.getElementById('setting-social-facebook').value },
-        { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
-        { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
-        { key: 'MAP_IMAGE', value: document.getElementById('setting-map-image').value },
-    ];
-
     try {
+        const updates = [
+            { key: 'USD_TO_EGP', value: document.getElementById('setting-usd-egp').value },
+            { key: 'SOCIAL_TIKTOK', value: document.getElementById('setting-social-tiktok').value },
+            { key: 'SOCIAL_FACEBOOK', value: document.getElementById('setting-social-facebook').value },
+            { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
+            { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
+        ];
+
+        // Handle Map Image Upload
+        const mapInput = document.getElementById('setting-map-image');
+        if (mapInput && mapInput.files.length > 0) {
+            const file = mapInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `map-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `public/${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('vehicle-images') // Reusing existing bucket
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicData } = supabase.storage
+                .from('vehicle-images')
+                .getPublicUrl(filePath);
+
+            updates.push({ key: 'MAP_IMAGE', value: publicData.publicUrl });
+        }
+
         const { error } = await supabase
             .from('app_settings')
             .upsert(updates);
 
         if (error) throw error;
+
         alert('Settings saved successfully!');
+        loadSettings(); // Refresh view
     } catch (err) {
         console.error(err);
         alert('Failed to save settings: ' + err.message);
