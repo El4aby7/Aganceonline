@@ -313,14 +313,17 @@ async function handleSaveProduct(e) {
 
         try {
             // Batch translation for efficiency
+            // Sanitize inputs to ensure they are strings
             const textsToTranslate = [
-                name,
-                description,
-                category,
-                details.mileage,
-                details.transmission,
-                details.fuel
+                name || '',
+                description || '',
+                category || '',
+                details.mileage || '',
+                details.transmission || '',
+                details.fuel || ''
             ];
+
+            console.log('Sending text to translate:', textsToTranslate);
 
             // Get current session for authorization
             const { data: { session } } = await supabase.auth.getSession();
@@ -331,10 +334,16 @@ async function handleSaveProduct(e) {
                 } : {}
             });
 
-            if (error) throw error;
-
-            if (data && data.translatedText && Array.isArray(data.translatedText)) {
-                 [nameAr, descAr, categoryAr, mileageAr, transAr, fuelAr] = data.translatedText;
+            if (error) {
+                console.error('Translation API Error:', error);
+                alert('Warning: Translation failed. check console for details.');
+            } else {
+                console.log('Translation API Response:', data);
+                if (data && data.translatedText && Array.isArray(data.translatedText)) {
+                     [nameAr, descAr, categoryAr, mileageAr, transAr, fuelAr] = data.translatedText;
+                } else {
+                    console.warn('Unexpected translation response format:', data);
+                }
             }
         } catch (transErr) {
             console.warn('Translation skipped due to error:', transErr);
@@ -608,7 +617,8 @@ async function loadSettings() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         loadSettings,
-        handleSaveSettings
+        handleSaveSettings,
+        handleSaveProduct
     };
 }
 

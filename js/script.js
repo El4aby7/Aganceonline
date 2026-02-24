@@ -60,7 +60,7 @@ async function init() {
     } else if (path.endsWith('inventory.html')) {
         loadInventory();
     } else if (path.endsWith('details.html')) {
-        loadDetails();
+        await loadDetails();
     } else if (path.endsWith('contact.html')) {
         loadContact();
     } else if (path.endsWith('favorites.html')) {
@@ -426,14 +426,33 @@ function loadFavoritesPage() {
 /**
  * Logic for Details Page: Loads specific vehicle info by ID.
  */
-function loadDetails() {
+async function loadDetails() {
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get('id'));
+
+    // Re-fetch products if the list is empty (e.g. initial load failed or direct navigation issue)
+    if (products.length === 0) {
+        console.warn('Products list empty on details page. Attempting to re-load products...');
+        await loadProducts();
+    }
+
     const product = products.find(p => p.id === id);
 
     if (!product) {
+        console.error(`Product ID ${id} not found.`);
         const container = document.getElementById('details-container');
-        if(container) container.innerHTML = '<p class="text-center text-slate-900 dark:text-white">Product not found</p>';
+        if(container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                    <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">error_outline</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Vehicle Not Found</h2>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">The vehicle you are looking for does not exist or has been removed.</p>
+                    <a href="inventory.html" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors">
+                        View Inventory
+                    </a>
+                </div>
+            `;
+        }
         return;
     }
 
@@ -687,6 +706,7 @@ if (typeof module !== 'undefined' && module.exports) {
         formatPrice,
         fetchExchangeRate,
         init,
-        loadProducts
+        loadProducts,
+        loadDetails
     };
 }
