@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function init() {
     // Apply initial preferences
     setTheme(currentTheme);
-    await setLanguage(currentLang); // Also fetches translation data
 
     // Bind Global Event Listeners
     const themeToggle = document.getElementById('theme-toggle');
@@ -46,10 +45,13 @@ async function init() {
     // Setup Mobile Menu
     setupMobileMenu();
 
-    // Load Data
+    // Load Data First
     await fetchExchangeRate();
     await loadProducts();
     await loadGlobalSettings();
+
+    // Then Set Language (fetches translation data) without triggering a re-render yet
+    await setLanguage(currentLang, false);
 
     // Route execution to specific page logic based on URL
     const path = window.location.pathname;
@@ -118,7 +120,7 @@ function updateThemeIcon() {
  * Sets the active language, updates HTML dir/lang attributes, and refreshes translations.
  * @param {string} lang - 'en' or 'ar'
  */
-async function setLanguage(lang) {
+async function setLanguage(lang, shouldRender = true) {
     currentLang = lang;
     localStorage.setItem('lang', lang);
     document.documentElement.setAttribute('lang', lang);
@@ -138,16 +140,18 @@ async function setLanguage(lang) {
     updateDOMTranslations();
     updateCurrencyButtonText();
 
-    // Re-render page content to apply dynamic DB translations
-    const path = window.location.pathname;
-    if (path.endsWith('index.html') || path.endsWith('/')) {
-        loadHome();
-    } else if (path.endsWith('inventory.html')) {
-        filterInventory();
-    } else if (path.endsWith('details.html')) {
-        loadDetails();
-    } else if (path.endsWith('favorites.html')) {
-        loadFavoritesPage();
+    if (shouldRender) {
+        // Re-render page content to apply dynamic DB translations
+        const path = window.location.pathname;
+        if (path.endsWith('index.html') || path.endsWith('/')) {
+            loadHome();
+        } else if (path.endsWith('inventory.html')) {
+            filterInventory();
+        } else if (path.endsWith('details.html')) {
+            loadDetails();
+        } else if (path.endsWith('favorites.html')) {
+            loadFavoritesPage();
+        }
     }
 }
 
