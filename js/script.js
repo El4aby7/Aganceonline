@@ -55,19 +55,14 @@ async function init() {
     const path = window.location.pathname;
     if (path.endsWith('index.html') || path.endsWith('/')) {
         loadHome();
-        if (path.endsWith('index.html')) window.history.replaceState(null, '', path.replace('index.html', 'main'));
     } else if (path.endsWith('inventory.html')) {
         loadInventory();
-        window.history.replaceState(null, '', path.replace('.html', ''));
     } else if (path.endsWith('details.html')) {
         loadDetails();
-        window.history.replaceState(null, '', path.replace('.html', '') + window.location.search);
     } else if (path.endsWith('contact.html')) {
         loadContact();
-        window.history.replaceState(null, '', path.replace('.html', ''));
     } else if (path.endsWith('favorites.html')) {
         loadFavoritesPage();
-        window.history.replaceState(null, '', path.replace('.html', ''));
     }
 }
 
