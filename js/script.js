@@ -137,6 +137,18 @@ async function setLanguage(lang) {
 
     updateDOMTranslations();
     updateCurrencyButtonText();
+
+    // Re-render page content to apply dynamic DB translations
+    const path = window.location.pathname;
+    if (path.endsWith('index.html') || path.endsWith('/')) {
+        loadHome();
+    } else if (path.endsWith('inventory.html')) {
+        filterInventory();
+    } else if (path.endsWith('details.html')) {
+        loadDetails();
+    } else if (path.endsWith('favorites.html')) {
+        loadFavoritesPage();
+    }
 }
 
 function toggleLanguage() {
@@ -369,7 +381,14 @@ function filterInventory() {
     const category = categorySelect ? categorySelect.value : '';
 
     const filtered = products.filter(p => {
-        const matchesTerm = p.name.toLowerCase().includes(term);
+        const nameEn = p.name ? p.name.toLowerCase() : '';
+        const nameAr = p.name_ar ? p.name_ar.toLowerCase() : '';
+        const matchesTerm = nameEn.includes(term) || nameAr.includes(term);
+
+        // Category check: exact match on English category (simplest for now as filter dropdown is English keys or translated keys?)
+        // The filter dropdown values are likely English (e.g. "SUV").
+        // If we translate the dropdown options, we need to map them back.
+        // For now, assuming the dropdown value corresponds to `p.category` (English).
         const matchesCategory = category === '' || (p.category && p.category === category);
         return matchesTerm && matchesCategory;
     });
@@ -418,15 +437,23 @@ function loadDetails() {
     const mainImg = document.getElementById('main-image');
     if (mainImg) mainImg.src = product.image_url;
 
-    document.getElementById('vehicle-title').textContent = product.name;
-    document.getElementById('vehicle-title-crumb').textContent = product.name;
+    const isAr = currentLang === 'ar';
+    const displayName = (isAr && product.name_ar) ? product.name_ar : product.name;
+    const displayDesc = (isAr && product.description_ar) ? product.description_ar : product.description;
+
+    document.getElementById('vehicle-title').textContent = displayName;
+    document.getElementById('vehicle-title-crumb').textContent = displayName;
     document.getElementById('vehicle-price').setAttribute('data-price-usd', product.price_usd);
-    document.getElementById('vehicle-desc').textContent = product.description;
+    document.getElementById('vehicle-desc').textContent = displayDesc;
 
     // Specs
-    document.getElementById('spec-mileage').textContent = product.details.mileage;
-    document.getElementById('spec-trans').textContent = product.details.transmission;
-    document.getElementById('spec-fuel').textContent = product.details.fuel;
+    const displayMileage = (isAr && product.details_ar?.mileage) ? product.details_ar.mileage : product.details.mileage;
+    const displayTrans = (isAr && product.details_ar?.transmission) ? product.details_ar.transmission : product.details.transmission;
+    const displayFuel = (isAr && product.details_ar?.fuel) ? product.details_ar.fuel : product.details.fuel;
+
+    document.getElementById('spec-mileage').textContent = displayMileage;
+    document.getElementById('spec-trans').textContent = displayTrans;
+    document.getElementById('spec-fuel').textContent = displayFuel;
 
     // Gallery Thumbnails
     const galleryContainer = document.getElementById('gallery-thumbnails');
@@ -591,11 +618,26 @@ function createProductCard(product) {
     const heartClass = fav ? 'text-primary' : 'text-white';
     const heartStyle = fav ? 'font-variation-settings: \'FILL\' 1;' : '';
 
+    const isAr = currentLang === 'ar';
+    const displayName = (isAr && product.name_ar) ? product.name_ar : product.name;
+    // Prefer DB translation for category if available, otherwise fallback to data-i18n
+    const displayCategory = (isAr && product.category_ar) ? product.category_ar : product.category;
+
+    // Specs
+    const displayMileage = (isAr && product.details_ar?.mileage) ? product.details_ar.mileage : product.details.mileage;
+    const displayTrans = (isAr && product.details_ar?.transmission) ? product.details_ar.transmission : product.details.transmission;
+    const displayFuel = (isAr && product.details_ar?.fuel) ? product.details_ar.fuel : product.details.fuel;
+
+    // Use custom translation rendering for category if present in DB
+    const categoryBadge = (isAr && product.category_ar)
+        ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">${product.category_ar}</span>`
+        : (product.category ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" data-i18n="${product.category.toLowerCase().replace(' ', '_')}">${product.category}</span>` : '');
+
     return `
     <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
         <div class="relative aspect-[16/10] overflow-hidden">
             <a href="details.html?id=${product.id}">
-                <img alt="${product.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
+                <img alt="${displayName}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
             </a>
             <div class="absolute top-3 right-3 z-20">
                 <button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center ${heartClass} hover:text-primary transition-colors" onclick="toggleFavorite(${product.id}, this)">
@@ -603,19 +645,19 @@ function createProductCard(product) {
                 </button>
             </div>
              <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                ${product.category ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" data-i18n="${product.category.toLowerCase().replace(' ', '_')}">${product.category}</span>` : ''}
+                ${categoryBadge}
             </div>
         </div>
         <div class="p-5 flex flex-col flex-grow">
             <div class="flex justify-between items-start mb-2">
-                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${product.name}</a>
+                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${displayName}</a>
             </div>
             <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-4 font-medium">
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${product.details.mileage}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${displayMileage}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${product.details.transmission}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${displayTrans}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${product.details.fuel}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${displayFuel}</span>
             </div>
             <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
                 <p class="text-xl font-black text-primary tracking-tight" data-price-usd="${product.price_usd}">$${product.price_usd.toLocaleString()}</p>

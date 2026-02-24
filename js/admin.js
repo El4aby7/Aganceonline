@@ -306,13 +306,50 @@ async function handleSaveProduct(e) {
         }
 
         // 3. Prepare DB Object
+        // Auto-translate to Arabic
+        btn.textContent = 'Translating...';
+
+        let nameAr = '', descAr = '', categoryAr = '', mileageAr = '', transAr = '', fuelAr = '';
+
+        try {
+            // Batch translation for efficiency
+            const textsToTranslate = [
+                name,
+                description,
+                category,
+                details.mileage,
+                details.transmission,
+                details.fuel
+            ];
+
+            const { data, error } = await supabase.functions.invoke('translate-text', {
+                body: { text: textsToTranslate, target_lang: 'ar' }
+            });
+
+            if (error) throw error;
+
+            if (data && data.translatedText && Array.isArray(data.translatedText)) {
+                 [nameAr, descAr, categoryAr, mileageAr, transAr, fuelAr] = data.translatedText;
+            }
+        } catch (transErr) {
+            console.warn('Translation skipped due to error:', transErr);
+        }
+
         const payload = {
             name,
             price_usd: price,
             category,
             featured,
             description,
-            details
+            details,
+            name_ar: nameAr,
+            description_ar: descAr,
+            category_ar: categoryAr,
+            details_ar: {
+                mileage: mileageAr,
+                transmission: transAr,
+                fuel: fuelAr
+            }
         };
 
         if (imageUrl) {

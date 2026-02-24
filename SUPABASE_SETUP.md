@@ -91,6 +91,13 @@ create policy "Admin Delete Images"
 on storage.objects for delete
 to authenticated
 using ( bucket_id = 'vehicle-images' );
+
+-- 6. Add Multilingual Support (Required for Auto-Translate)
+ALTER TABLE public.products
+ADD COLUMN IF NOT EXISTS name_ar text,
+ADD COLUMN IF NOT EXISTS description_ar text,
+ADD COLUMN IF NOT EXISTS category_ar text,
+ADD COLUMN IF NOT EXISTS details_ar jsonb;
 ```
 
 ## Step 2: Create an Admin User
