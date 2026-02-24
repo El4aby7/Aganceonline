@@ -1,10 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     initAdmin();
-    // Cosmetic URL Cleanup
-    const path = window.location.pathname;
-    if (path.endsWith('admin.html')) {
-        window.history.replaceState(null, '', path.replace('.html', ''));
-    }
 });
 
 let currentUser = null;
