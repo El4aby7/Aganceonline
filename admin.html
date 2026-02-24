@@ -117,16 +117,25 @@
 
             <!-- Inquiries View -->
             <div id="view-inquiries" class="hidden space-y-6">
-                <h2 class="text-2xl font-bold">Customer Inquiries</h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Customer Inquiries</h2>
+                    <select id="filter-inquiries" class="rounded-lg bg-white dark:bg-surface-card border border-gray-200 dark:border-white/10 px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
+                        <option value="all">All Inquiries</option>
+                        <option value="unresolved" selected>Unresolved</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                </div>
                 <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-white/10">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 uppercase font-bold text-xs">
                             <tr>
+                                <th class="px-6 py-3">Status</th>
                                 <th class="px-6 py-3">Date</th>
                                 <th class="px-6 py-3">Name</th>
                                 <th class="px-6 py-3">Contact</th>
                                 <th class="px-6 py-3">Vehicle</th>
                                 <th class="px-6 py-3">Message</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inquiries-table-body" class="divide-y divide-gray-200 dark:divide-white/5 bg-white dark:bg-surface-card">
@@ -152,15 +161,79 @@
                 <form id="product-form" class="p-6 space-y-6">
                     <input type="hidden" id="product-id">
 
+                    <!-- English Section -->
+                    <div class="border border-gray-200 dark:border-white/10 rounded-lg p-4 bg-gray-50/50 dark:bg-white/5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-lg text-primary">English Details</h4>
+                            <button type="button" id="translate-btn" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded flex items-center gap-1 transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">translate</span> Auto-Translate to Arabic
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Vehicle Name (EN)</label>
+                                <input type="text" id="p-name" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Price (USD)</label>
+                                <input type="number" id="p-price" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Description (EN)</label>
+                            <textarea id="p-desc" rows="2" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Mileage</label>
+                                <input type="text" id="p-mileage" placeholder="e.g. 5k mi" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Transmission</label>
+                                <input type="text" id="p-trans" placeholder="e.g. Auto" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Fuel</label>
+                                <input type="text" id="p-fuel" placeholder="e.g. Petrol" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arabic Section -->
+                    <div class="border border-gray-200 dark:border-white/10 rounded-lg p-4 bg-gray-50/50 dark:bg-white/5 relative">
+                        <h4 class="font-bold text-lg text-green-600 mb-4 text-right" dir="rtl">تفاصيل العربية (Arabic)</h4>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1 text-right">Vehicle Name (AR)</label>
+                            <input type="text" id="p-name-ar" dir="rtl" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1 text-right">Description (AR)</label>
+                            <textarea id="p-desc-ar" dir="rtl" rows="2" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4" dir="rtl">
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Mileage (AR)</label>
+                                <input type="text" id="p-mileage-ar" placeholder="مثال: ٥٠٠٠ كم" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Transmission (AR)</label>
+                                <input type="text" id="p-trans-ar" placeholder="مثال: اوتوماتيك" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1 text-gray-500">Fuel (AR)</label>
+                                <input type="text" id="p-fuel-ar" placeholder="مثال: بنزين" class="w-full rounded-lg bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shared Options -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Vehicle Name</label>
-                            <input type="text" id="p-name" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Price (USD)</label>
-                            <input type="number" id="p-price" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" required>
-                        </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Category</label>
                             <select id="p-category" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
@@ -173,26 +246,6 @@
                         <div class="flex items-center gap-2 pt-6">
                             <input type="checkbox" id="p-featured" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary">
                             <label for="p-featured" class="text-sm font-medium">Feature on Homepage</label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Description</label>
-                        <textarea id="p-desc" rows="3" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"></textarea>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Mileage</label>
-                            <input type="text" id="p-mileage" placeholder="e.g. 5,000 km" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Transmission</label>
-                            <input type="text" id="p-trans" placeholder="e.g. Auto" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Fuel Type</label>
-                            <input type="text" id="p-fuel" placeholder="e.g. Petrol" class="w-full rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
                         </div>
                     </div>
 
@@ -224,6 +277,7 @@
 
     <!-- Scripts -->
     <script src="js/supabase-config.js"></script>
+    <script src="js/translator.js"></script>
     <script src="js/admin.js"></script>
 
 </body>

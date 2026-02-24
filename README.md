@@ -8,65 +8,63 @@ A premium automotive dealership website featuring a modern, responsive design wi
 *   **Theme:** Dark and Light mode toggle.
 *   **Language:** English and Arabic (RTL support).
 *   **Currency:** Toggle between USD ($) and EGP (L.E).
-*   **Data Driven:** Products and translations are managed via JSON files.
+*   **Data Driven:** Products and inquiries are managed via Supabase.
 *   **Responsive:** Fully responsive design using Tailwind CSS.
 *   **Favorites:** Persist favorite vehicles across sessions.
 *   **Inventory Filter:** Filter by category and search by name.
+*   **Admin Dashboard:** Manage vehicles and customer inquiries.
 
-## Data Structure
+## Supabase Setup
 
-The application is data-driven. Below is the structure for the JSON configuration files found in the `data/` directory.
+This project uses Supabase for the backend (Database & Auth).
 
-### `data/product.json`
+1.  **Initial Setup:** Follow the instructions in `SUPABASE_SETUP.md` to create tables and policies.
+2.  **Fix & Updates:** Run the SQL commands in `fix_rls_and_update_schema.sql` to:
+    *   Allow authenticated users (admins) to create inquiries (fixes RLS error).
+    *   Add a `resolved` status column to inquiries.
+    *   Enable admin management (update/delete) for inquiries.
 
-This file contains the inventory data. Each item represents a vehicle.
+## Admin Dashboard
 
-*   `id` (Number): Unique identifier for the vehicle.
-*   `name` (String): The display name of the car (e.g., "2023 Porsche 911 GT3").
-*   `price_usd` (Number): The price in US Dollars.
-*   `image_url` (String): Path to the main display image.
-*   `featured` (Boolean): If `true`, the car appears on the Home page trending section.
-*   `category` (String): The category for filtering (e.g., "Sports", "SUV", "Supercar").
-*   `description` (String): Full description text for the details page.
-*   `details` (Object):
-    *   `mileage`: String (e.g., "3.2k mi").
-    *   `transmission`: String (e.g., "Auto").
-    *   `fuel`: String (e.g., "Petrol").
-*   `gallery` (Array of Strings): Paths to additional images for the details page thumbnail gallery.
+The application includes a protected Admin Dashboard (`admin.html`) for managing content.
 
-### `data/translations.json`
+### Accessing the Dashboard
+1.  Navigate to `admin.html`.
+2.  Log in using the credentials created in the Supabase Authentication tab.
 
-This file manages all text content for internationalization.
+### Managing Vehicles
+*   **View:** The "Products" tab lists all current vehicles.
+*   **Add:** Click "Add Vehicle" to open the form. You can upload a main image and a gallery of images.
+*   **Edit:** Click "Edit" on any vehicle row to modify its details.
+*   **Delete:** Click "Delete" to remove a vehicle permanently.
 
-*   `en` (Object): Key-value pairs for English text.
-*   `ar` (Object): Key-value pairs for Arabic text.
+### Managing Inquiries
+*   **View:** The "Inquiries" tab lists all customer messages submitted via the website.
+*   **Filter:** Use the dropdown to filter by "Unresolved", "Resolved", or "All".
+*   **Resolve:** Click the checkbox in the "Status" column to mark an inquiry as resolved (or unresolved).
+*   **Delete:** Click the trash icon to delete an inquiry permanently.
 
-**Key Naming Convention:**
-*   `header_*`: Header and navigation items.
-*   `hero_*`: Hero section text.
-*   `nav_*`: Navigation links.
-*   `filter_*`: Inventory filter labels.
-*   `price_*`: Currency symbols.
-
-## Managing Content
+## Managing Content (Static)
 
 ### Updating Text & Translations
+Text content is stored in `data/translations.json` for internationalization.
 
 1.  Open `data/translations.json`.
 2.  Find the key corresponding to the text you want to change (e.g., `"hero_title"`).
-3.  Update the value for both languages.
-
-### Updating Products & Images
-
-1.  **Add Images:**
-    *   Place your new vehicle images in the `assets/images/` folder.
-    *   Ensure image names are descriptive (e.g., `bmw-m4-2024.jpg`).
-
-2.  **Update Product Data:**
-    *   Open `data/product.json`.
-    *   Copy an existing product object and modify the fields.
-    *   Ensure the `id` is unique.
+3.  Update the value for both languages (`en` and `ar`).
 
 ## Customization
 
-*   **Currency Rate:** The exchange rate is defined in `js/script.js` as `const USD_TO_EGP = 50;`. Update this value to change the conversion rate.
+*   **Currency Rate:** The exchange rate is defined in `js/script.js` as `const USD_TO_EGP = 47.02;`. Update this value to change the conversion rate.
+
+## Auto-Translation Feature
+
+To enable the "Auto-Translate to Arabic" button in the Admin Dashboard:
+
+1.  **Deploy the Edge Function:**
+    *   Ensure you have the Supabase CLI installed.
+    *   Run: `supabase functions deploy translate-product`
+2.  **Set OpenAI API Key:**
+    *   Go to your Supabase Dashboard > Edge Functions.
+    *   Add a new secret named `OPENAI_API_KEY` with your OpenAI API key.
+    *   Alternatively, run: `supabase secrets set OPENAI_API_KEY=your_key_here`

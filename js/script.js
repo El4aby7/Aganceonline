@@ -310,7 +310,11 @@ function filterInventory() {
     const category = categorySelect ? categorySelect.value : '';
 
     const filtered = products.filter(p => {
-        const matchesTerm = p.name.toLowerCase().includes(term);
+        // Search in both English and Arabic names
+        const nameEn = p.name ? p.name.toLowerCase() : '';
+        const nameAr = p.name_ar ? p.name_ar.toLowerCase() : '';
+        const matchesTerm = nameEn.includes(term) || nameAr.includes(term);
+
         const matchesCategory = category === '' || (p.category && p.category === category);
         return matchesTerm && matchesCategory;
     });
@@ -356,18 +360,20 @@ function loadDetails() {
     }
 
     // Render Main Details
+    const content = getProductContent(product);
+
     const mainImg = document.getElementById('main-image');
     if (mainImg) mainImg.src = product.image_url;
 
-    document.getElementById('vehicle-title').textContent = product.name;
-    document.getElementById('vehicle-title-crumb').textContent = product.name;
+    document.getElementById('vehicle-title').textContent = content.name;
+    document.getElementById('vehicle-title-crumb').textContent = content.name;
     document.getElementById('vehicle-price').setAttribute('data-price-usd', product.price_usd);
-    document.getElementById('vehicle-desc').textContent = product.description;
+    document.getElementById('vehicle-desc').textContent = content.description;
 
     // Specs
-    document.getElementById('spec-mileage').textContent = product.details.mileage;
-    document.getElementById('spec-trans').textContent = product.details.transmission;
-    document.getElementById('spec-fuel').textContent = product.details.fuel;
+    document.getElementById('spec-mileage').textContent = content.details.mileage;
+    document.getElementById('spec-trans').textContent = content.details.transmission;
+    document.getElementById('spec-fuel').textContent = content.details.fuel;
 
     // Gallery Thumbnails
     const galleryContainer = document.getElementById('gallery-thumbnails');
@@ -512,6 +518,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- Component Rendering ---
 
 /**
+ * Helper to get translated content for a product based on currentLang
+ */
+function getProductContent(product) {
+    if (currentLang === 'ar') {
+        return {
+            name: product.name_ar || product.name,
+            description: product.description_ar || product.description,
+            details: {
+                mileage: (product.details_ar && product.details_ar.mileage) || product.details.mileage,
+                transmission: (product.details_ar && product.details_ar.transmission) || product.details.transmission,
+                fuel: (product.details_ar && product.details_ar.fuel) || product.details.fuel
+            }
+        };
+    }
+    return {
+        name: product.name,
+        description: product.description,
+        details: product.details
+    };
+}
+
+/**
  * Generates the HTML for a single product card.
  * @param {Object} product - The product data object
  * @returns {string} HTML string
@@ -522,11 +550,13 @@ function createProductCard(product) {
     const heartClass = fav ? 'text-primary' : 'text-white';
     const heartStyle = fav ? 'font-variation-settings: \'FILL\' 1;' : '';
 
+    const content = getProductContent(product);
+
     return `
     <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
         <div class="relative aspect-[16/10] overflow-hidden">
             <a href="details.html?id=${product.id}">
-                <img alt="${product.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
+                <img alt="${content.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
             </a>
             <div class="absolute top-3 right-3 z-20">
                 <button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center ${heartClass} hover:text-primary transition-colors" onclick="toggleFavorite(${product.id}, this)">
@@ -539,14 +569,14 @@ function createProductCard(product) {
         </div>
         <div class="p-5 flex flex-col flex-grow">
             <div class="flex justify-between items-start mb-2">
-                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${product.name}</a>
+                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${content.name}</a>
             </div>
             <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-4 font-medium">
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${product.details.mileage}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${content.details.mileage}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${product.details.transmission}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${content.details.transmission}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${product.details.fuel}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${content.details.fuel}</span>
             </div>
             <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
                 <p class="text-xl font-black text-primary tracking-tight" data-price-usd="${product.price_usd}">$${product.price_usd.toLocaleString()}</p>

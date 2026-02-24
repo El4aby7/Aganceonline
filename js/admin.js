@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentUser = null;
 let currentProducts = [];
+let currentInquiries = [];
 
 // DOM Elements
 const loginSection = document.getElementById('login-section');
@@ -39,10 +40,20 @@ async function initAdmin() {
     tabProducts.addEventListener('click', () => switchTab('products'));
     tabInquiries.addEventListener('click', () => switchTab('inquiries'));
 
+    const filterSelect = document.getElementById('filter-inquiries');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterInquiries);
+    }
+
     document.getElementById('add-product-btn').addEventListener('click', () => openModal());
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('product-form').addEventListener('submit', handleSaveProduct);
+
+    const translateBtn = document.getElementById('translate-btn');
+    if (translateBtn) {
+        translateBtn.addEventListener('click', handleAutoTranslate);
+    }
 }
 
 // --- Auth Logic ---
@@ -188,17 +199,32 @@ function openModal(product = null) {
         editingId = product.id;
         title.textContent = 'Edit Vehicle';
 
+        // English
         document.getElementById('p-name').value = product.name;
         document.getElementById('p-price').value = product.price_usd;
         document.getElementById('p-category').value = product.category;
         document.getElementById('p-featured').checked = product.featured;
         document.getElementById('p-desc').value = product.description;
 
-        // Handle nested details
         if (product.details) {
             document.getElementById('p-mileage').value = product.details.mileage || '';
             document.getElementById('p-trans').value = product.details.transmission || '';
             document.getElementById('p-fuel').value = product.details.fuel || '';
+        }
+
+        // Arabic (Check if columns exist)
+        document.getElementById('p-name-ar').value = product.name_ar || '';
+        document.getElementById('p-desc-ar').value = product.description_ar || '';
+
+        if (product.details_ar) {
+             document.getElementById('p-mileage-ar').value = product.details_ar.mileage || '';
+             document.getElementById('p-trans-ar').value = product.details_ar.transmission || '';
+             document.getElementById('p-fuel-ar').value = product.details_ar.fuel || '';
+        } else {
+             // Reset Arabic specs if not found
+             document.getElementById('p-mileage-ar').value = '';
+             document.getElementById('p-trans-ar').value = '';
+             document.getElementById('p-fuel-ar').value = '';
         }
 
         // Handle Gallery
@@ -246,7 +272,7 @@ async function handleSaveProduct(e) {
     btn.disabled = true;
 
     try {
-        // 1. Collect Data
+        // 1. Collect Data (English)
         const name = document.getElementById('p-name').value;
         const price = parseFloat(document.getElementById('p-price').value);
         const category = document.getElementById('p-category').value;
@@ -257,6 +283,15 @@ async function handleSaveProduct(e) {
             mileage: document.getElementById('p-mileage').value,
             transmission: document.getElementById('p-trans').value,
             fuel: document.getElementById('p-fuel').value
+        };
+
+        // 1b. Collect Data (Arabic)
+        const name_ar = document.getElementById('p-name-ar').value;
+        const description_ar = document.getElementById('p-desc-ar').value;
+        const details_ar = {
+            mileage: document.getElementById('p-mileage-ar').value,
+            transmission: document.getElementById('p-trans-ar').value,
+            fuel: document.getElementById('p-fuel-ar').value
         };
 
         // 2. Handle Image Upload
@@ -289,7 +324,10 @@ async function handleSaveProduct(e) {
             category,
             featured,
             description,
-            details
+            details,
+            name_ar: name_ar || null,
+            description_ar: description_ar || null,
+            details_ar // JSONB
         };
 
         if (imageUrl) {
@@ -364,7 +402,7 @@ async function handleSaveProduct(e) {
 
 async function loadInquiries() {
     const tbody = document.getElementById('inquiries-table-body');
-    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">Loading...</td></tr>';
 
     const { data, error } = await supabase
         .from('inquiries')
@@ -373,33 +411,116 @@ async function loadInquiries() {
 
     if (error) {
         console.error(error);
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Failed to load inquiries</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load inquiries</td></tr>';
         return;
     }
 
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">No inquiries yet.</td></tr>';
+    currentInquiries = data;
+    filterInquiries();
+}
+
+function filterInquiries() {
+    const filter = document.getElementById('filter-inquiries').value; // all, resolved, unresolved
+    let filtered = currentInquiries;
+
+    if (filter === 'resolved') {
+        filtered = currentInquiries.filter(i => i.resolved === true);
+    } else if (filter === 'unresolved') {
+        filtered = currentInquiries.filter(i => i.resolved !== true);
+    }
+
+    renderInquiries(filtered);
+}
+
+function renderInquiries(inquiries) {
+    const tbody = document.getElementById('inquiries-table-body');
+
+    if (inquiries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">No inquiries found.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = data.map(inq => `
-        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+    // Simple XSS protection
+    const escapeHtml = (unsafe) => {
+        if (!unsafe) return '';
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    };
+
+    tbody.innerHTML = inquiries.map(inq => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${inq.resolved ? 'opacity-60 bg-gray-50 dark:bg-white/5' : ''}">
+            <td class="px-6 py-4">
+                 <input type="checkbox" ${inq.resolved ? 'checked' : ''} onchange="toggleResolved(${inq.id}, this)" class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" title="Mark as Resolved">
+            </td>
             <td class="px-6 py-4 text-gray-500 text-xs whitespace-nowrap">
                 ${new Date(inq.created_at).toLocaleDateString()}
             </td>
-            <td class="px-6 py-4 font-medium">${inq.name}</td>
+            <td class="px-6 py-4 font-medium">${escapeHtml(inq.name)}</td>
             <td class="px-6 py-4 text-sm">
                 <div class="flex flex-col">
-                    <a href="mailto:${inq.email}" class="text-blue-500 hover:underline">${inq.email}</a>
-                    <span class="text-gray-500">${inq.phone || '-'}</span>
+                    <a href="mailto:${escapeHtml(inq.email)}" class="text-blue-500 hover:underline">${escapeHtml(inq.email)}</a>
+                    <span class="text-gray-500">${escapeHtml(inq.phone) || '-'}</span>
                 </div>
             </td>
             <td class="px-6 py-4 text-sm">
-                ${inq.vehicle_name ? `<span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">${inq.vehicle_name}</span>` : '<span class="text-gray-400">-</span>'}
+                ${inq.vehicle_name ? `<span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">${escapeHtml(inq.vehicle_name)}</span>` : '<span class="text-gray-400">-</span>'}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${inq.message}">
-                ${inq.message || '-'}
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${escapeHtml(inq.message)}">
+                ${escapeHtml(inq.message) || '-'}
+            </td>
+            <td class="px-6 py-4 text-right">
+                <button onclick="deleteInquiry(${inq.id})" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-white/10 transition-colors" title="Delete Inquiry">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
             </td>
         </tr>
     `).join('');
 }
+
+window.toggleResolved = async function(id, checkbox) {
+    const resolved = checkbox.checked;
+
+    // Optimistic UI update (optional, but good for UX)
+    const row = checkbox.closest('tr');
+    if (resolved) {
+        row.classList.add('opacity-60', 'bg-gray-50', 'dark:bg-white/5');
+    } else {
+        row.classList.remove('opacity-60', 'bg-gray-50', 'dark:bg-white/5');
+    }
+
+    const { error } = await supabase
+        .from('inquiries')
+        .update({ resolved })
+        .eq('id', id);
+
+    if (error) {
+        alert('Error updating status: ' + error.message);
+        checkbox.checked = !resolved; // Revert
+        return;
+    }
+
+    // Update local state
+    const inq = currentInquiries.find(i => i.id === id);
+    if (inq) inq.resolved = resolved;
+
+    // Refresh view if filtering is active (e.g. if viewing 'unresolved' and we mark as resolved, it should disappear)
+    filterInquiries();
+};
+
+window.deleteInquiry = async function(id) {
+    if (!confirm('Are you sure you want to delete this inquiry?')) return;
+
+    const { error } = await supabase.from('inquiries').delete().eq('id', id);
+
+    if (error) {
+        alert('Error deleting: ' + error.message);
+    } else {
+        // Remove from local state
+        currentInquiries = currentInquiries.filter(i => i.id !== id);
+        filterInquiries();
+    }
+};
