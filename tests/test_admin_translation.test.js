@@ -30,7 +30,9 @@ global.document = {
     createElement: jest.fn(),
     addEventListener: jest.fn()
 };
-global.window = {};
+global.window = {
+    SUPABASE_ANON_KEY: 'mock-anon-key'
+};
 global.alert = jest.fn();
 global.confirm = jest.fn().mockReturnValue(true);
 global.console = {
@@ -58,6 +60,9 @@ describe('handleSaveProduct', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+
+        // Reset session mock
+        global.supabase.auth.getSession.mockResolvedValue({ data: { session: { access_token: '123' } } });
 
         // Mock form inputs
         mockInputs = {
@@ -112,5 +117,38 @@ describe('handleSaveProduct', () => {
         const invokeCall = global.supabase.functions.invoke.mock.calls[0];
         const payload = invokeCall[1].body.text;
         expect(payload[1]).toBe(''); // Description sanitized
+    });
+
+    test('aborts translation if session is missing', async () => {
+        // Mock missing session
+        global.supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+        const event = { preventDefault: jest.fn() };
+        await admin.handleSaveProduct(event);
+
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('No active session'));
+        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('session has expired'));
+
+        // Function should NOT be called
+        expect(global.supabase.functions.invoke).not.toHaveBeenCalled();
+
+        // Should still attempt to save (with empty translations)
+        // because the error is caught in the inner catch block
+        expect(global.supabase.from().insert).toHaveBeenCalled();
+    });
+
+    test('includes apikey in headers', async () => {
+        global.supabase.functions.invoke.mockResolvedValue({
+            data: { translatedText: [] },
+            error: null
+        });
+
+        const event = { preventDefault: jest.fn() };
+        await admin.handleSaveProduct(event);
+
+        const invokeCall = global.supabase.functions.invoke.mock.calls[0];
+        const headers = invokeCall[1].headers;
+        expect(headers).toHaveProperty('apikey', 'mock-anon-key');
+        expect(headers).toHaveProperty('Authorization', 'Bearer 123');
     });
 });
