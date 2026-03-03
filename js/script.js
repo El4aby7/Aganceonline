@@ -29,6 +29,47 @@ const escapeHtml = (unsafe) => {
          .replace(/'/g, "&#039;");
 };
 
+// --- Input Validation Helpers ---
+function validateContactField(value, type) {
+    if (typeof value !== 'string') return false;
+    const trimmed = value.trim();
+
+    if (type === 'phone') {
+        return /^\d{11}$/.test(trimmed);
+    } else if (type === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(trimmed) && trimmed.length <= 255;
+    } else if (type === 'name' || type === 'interest' || type === 'vehicle') {
+        const hasLetter = /[a-zA-Z]/.test(trimmed);
+        return hasLetter && trimmed.length <= 255;
+    } else if (type === 'message') {
+        const hasLetter = /[a-zA-Z]/.test(trimmed);
+        return hasLetter && trimmed.length <= 1000;
+    }
+    return false;
+}
+
+function showFieldError(inputElement) {
+    if (!inputElement) return;
+    inputElement.classList.add('border-red-500');
+    let errorEl = inputElement.parentElement.querySelector('.error-msg');
+    if (!errorEl) {
+        errorEl = document.createElement('span');
+        errorEl.className = 'error-msg text-red-500 text-xs mt-1';
+        errorEl.textContent = 'missing or incorrect info';
+        inputElement.parentElement.appendChild(errorEl);
+    }
+}
+
+function clearFieldError(inputElement) {
+    if (!inputElement) return;
+    inputElement.classList.remove('border-red-500');
+    const errorEl = inputElement.parentElement.querySelector('.error-msg');
+    if (errorEl) {
+        errorEl.remove();
+    }
+}
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -544,17 +585,36 @@ function loadContact() {
 
 async function handleContactSubmit(e) {
     e.preventDefault();
+
+    const nameEl = document.getElementById('c-name');
+    const emailEl = document.getElementById('c-email');
+    const phoneEl = document.getElementById('c-phone');
+    const interestEl = document.getElementById('c-interest');
+    const messageEl = document.getElementById('c-message');
+
+    [nameEl, emailEl, phoneEl, interestEl, messageEl].forEach(clearFieldError);
+
+    let isValid = true;
+
+    if (!validateContactField(nameEl.value, 'name')) { showFieldError(nameEl); isValid = false; }
+    if (!validateContactField(emailEl.value, 'email')) { showFieldError(emailEl); isValid = false; }
+    if (!validateContactField(phoneEl.value, 'phone')) { showFieldError(phoneEl); isValid = false; }
+    if (!validateContactField(interestEl.value, 'interest')) { showFieldError(interestEl); isValid = false; }
+    if (!validateContactField(messageEl.value, 'message')) { showFieldError(messageEl); isValid = false; }
+
+    if (!isValid) return;
+
     const btn = e.target.querySelector('button');
     const originalText = btn.innerHTML;
     btn.innerHTML = 'Sending...';
     btn.disabled = true;
 
     try {
-        const name = document.getElementById('c-name').value;
-        const email = document.getElementById('c-email').value;
-        const phone = document.getElementById('c-phone').value;
-        const interest = document.getElementById('c-interest').value;
-        const message = document.getElementById('c-message').value;
+        const name = nameEl.value.trim();
+        const email = emailEl.value.trim();
+        const phone = phoneEl.value.trim();
+        const interest = interestEl.value.trim();
+        const message = messageEl.value.trim();
 
         const { error } = await supabase.from('inquiries').insert({
             name,
@@ -604,17 +664,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inqForm) {
         inqForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const nameEl = document.getElementById('inq-name');
+            const emailEl = document.getElementById('inq-email');
+            const phoneEl = document.getElementById('inq-phone');
+            const messageEl = document.getElementById('inq-message');
+            const vehicleEl = document.getElementById('inq-vehicle');
+
+            [nameEl, emailEl, phoneEl, messageEl, vehicleEl].forEach(clearFieldError);
+
+            let isValid = true;
+
+            if (!validateContactField(nameEl.value, 'name')) { showFieldError(nameEl); isValid = false; }
+            if (!validateContactField(emailEl.value, 'email')) { showFieldError(emailEl); isValid = false; }
+            if (!validateContactField(phoneEl.value, 'phone')) { showFieldError(phoneEl); isValid = false; }
+            if (!validateContactField(messageEl.value, 'message')) { showFieldError(messageEl); isValid = false; }
+            if (!validateContactField(vehicleEl.value, 'vehicle')) { showFieldError(vehicleEl); isValid = false; }
+
+            if (!isValid) return;
+
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             btn.textContent = 'Sending...';
             btn.disabled = true;
 
             try {
-                const name = document.getElementById('inq-name').value;
-                const email = document.getElementById('inq-email').value;
-                const phone = document.getElementById('inq-phone').value;
-                const message = document.getElementById('inq-message').value;
-                const vehicle = document.getElementById('inq-vehicle').value;
+                const name = nameEl.value.trim();
+                const email = emailEl.value.trim();
+                const phone = phoneEl.value.trim();
+                const message = messageEl.value.trim();
+                const vehicle = vehicleEl.value.trim();
 
                 const { error } = await supabase.from('inquiries').insert({
                     name,
