@@ -17,6 +17,18 @@ let translations = {};
 let products = [];
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
+// Simple XSS protection
+const escapeHtml = (unsafe) => {
+    if (unsafe === null || unsafe === undefined) return '';
+    if (typeof unsafe !== 'string') unsafe = String(unsafe);
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+};
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -490,9 +502,10 @@ async function loadDetails() {
         if (gallery.length > 0) {
             galleryContainer.innerHTML = gallery.map((url) => {
                 const isActive = url === product.image_url;
+                // Note: using dataset to pass URL safely to avoid XSS in onclick handler
                 return `
-                <button class="relative flex-none w-24 aspect-[4/3] rounded-lg overflow-hidden hover:opacity-100 transition-opacity ${isActive ? 'ring-2 ring-primary' : 'opacity-60'}" onclick="changeMainImage('${url}', this)">
-                    <img src="${url}" class="w-full h-full object-cover" alt="Thumbnail">
+                <button class="relative flex-none w-24 aspect-[4/3] rounded-lg overflow-hidden hover:opacity-100 transition-opacity ${isActive ? 'ring-2 ring-primary' : 'opacity-60'}" data-url="${escapeHtml(url)}" onclick="changeMainImage(this.dataset.url, this)">
+                    <img src="${escapeHtml(url)}" class="w-full h-full object-cover" alt="Thumbnail">
                 </button>
             `}).join('');
         }
@@ -653,14 +666,14 @@ function createProductCard(product) {
 
     // Use custom translation rendering for category if present in DB
     const categoryBadge = (isAr && product.category_ar)
-        ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">${product.category_ar}</span>`
-        : (product.category ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" data-i18n="${product.category.toLowerCase().replace(' ', '_')}">${product.category}</span>` : '');
+        ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">${escapeHtml(product.category_ar)}</span>`
+        : (product.category ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" data-i18n="${escapeHtml(product.category.toLowerCase().replace(' ', '_'))}">${escapeHtml(product.category)}</span>` : '');
 
     return `
     <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
         <div class="relative aspect-[16/10] overflow-hidden">
             <a href="details.html?id=${product.id}">
-                <img alt="${displayName}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${product.image_url}"/>
+                <img alt="${escapeHtml(displayName)}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src="${escapeHtml(product.image_url)}"/>
             </a>
             <div class="absolute top-3 right-3 z-20">
                 <button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center ${heartClass} hover:text-primary transition-colors" onclick="toggleFavorite(${product.id}, this)">
@@ -673,14 +686,14 @@ function createProductCard(product) {
         </div>
         <div class="p-5 flex flex-col flex-grow">
             <div class="flex justify-between items-start mb-2">
-                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${displayName}</a>
+                <a href="details.html?id=${product.id}" class="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">${escapeHtml(displayName)}</a>
             </div>
             <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-4 font-medium">
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${displayMileage}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">speed</span> ${escapeHtml(displayMileage)}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${displayTrans}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">settings</span> ${escapeHtml(displayTrans)}</span>
                 <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/20"></span>
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${displayFuel}</span>
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${escapeHtml(displayFuel)}</span>
             </div>
             <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
                 <p class="text-xl font-black text-primary tracking-tight" data-price-usd="${product.price_usd}">$${product.price_usd.toLocaleString()}</p>
@@ -707,6 +720,8 @@ if (typeof module !== 'undefined' && module.exports) {
         fetchExchangeRate,
         init,
         loadProducts,
-        loadDetails
+        loadDetails,
+        createProductCard,
+        escapeHtml
     };
 }
