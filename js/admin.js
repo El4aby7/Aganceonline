@@ -6,6 +6,18 @@ let currentUser = null;
 let currentProducts = [];
 let currentInquiries = [];
 
+// Simple XSS protection
+const escapeHtml = (unsafe) => {
+    if (unsafe === null || unsafe === undefined) return '';
+    if (typeof unsafe !== 'string') unsafe = String(unsafe);
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+};
+
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
@@ -163,12 +175,12 @@ function renderProducts(products) {
         <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
             <td class="px-6 py-4">
                 <div class="h-10 w-16 rounded overflow-hidden bg-gray-200">
-                    <img src="${p.image_url}" class="h-full w-full object-cover" alt="car">
+                    <img src="${escapeHtml(p.image_url)}" class="h-full w-full object-cover" alt="car">
                 </div>
             </td>
-            <td class="px-6 py-4 font-medium">${p.name}</td>
+            <td class="px-6 py-4 font-medium">${escapeHtml(p.name)}</td>
             <td class="px-6 py-4">$${p.price_usd.toLocaleString()}</td>
-            <td class="px-6 py-4"><span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-xs">${p.category || '-'}</span></td>
+            <td class="px-6 py-4"><span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-xs">${escapeHtml(p.category) || '-'}</span></td>
             <td class="px-6 py-4">
                 ${p.featured ? '<span class="text-green-500 font-bold text-xs">Featured</span>' : '<span class="text-gray-400 text-xs">Standard</span>'}
             </td>
@@ -247,7 +259,7 @@ function renderGallery() {
     const container = document.getElementById('gallery-preview');
     container.innerHTML = currentGallery.map((url, index) => `
         <div class="relative group h-24 w-full rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
-            <img src="${url}" class="h-full w-full object-cover" alt="gallery">
+            <img src="${escapeHtml(url)}" class="h-full w-full object-cover" alt="gallery">
             <button type="button" onclick="deleteGalleryImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
                 <span class="material-symbols-outlined text-[16px]">close</span>
             </button>
@@ -485,17 +497,6 @@ function renderInquiries(inquiries) {
         return;
     }
 
-    // Simple XSS protection
-    const escapeHtml = (unsafe) => {
-        if (!unsafe) return '';
-        return unsafe
-             .replace(/&/g, "&amp;")
-             .replace(/</g, "&lt;")
-             .replace(/>/g, "&gt;")
-             .replace(/"/g, "&quot;")
-             .replace(/'/g, "&#039;");
-    };
-
     tbody.innerHTML = inquiries.map(inq => `
         <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${inq.resolved ? 'opacity-60 bg-gray-50 dark:bg-white/5' : ''}">
             <td class="px-6 py-4">
@@ -627,7 +628,9 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         loadSettings,
         handleSaveSettings,
-        handleSaveProduct
+        handleSaveProduct,
+        renderProducts,
+        escapeHtml
     };
 }
 
