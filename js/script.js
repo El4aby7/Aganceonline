@@ -366,6 +366,12 @@ async function loadGlobalSettings() {
              mapContainer.style.backgroundImage = `url("${settings['MAP_IMAGE']}")`;
         }
 
+        // Apply Hero Image
+        const heroBgImage = document.getElementById('hero-bg-image');
+        if (heroBgImage && settings['HERO_IMAGE']) {
+             heroBgImage.src = settings['HERO_IMAGE'];
+        }
+
     } catch (error) {
         console.error('Failed to load global settings', error);
     }

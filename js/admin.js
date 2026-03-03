@@ -581,9 +581,11 @@ async function loadSettings() {
     const locPinInput = document.getElementById('setting-location-pin');
     const mapImgInput = document.getElementById('setting-map-image');
     const currentMapSpan = document.getElementById('current-map-image');
+    const heroImgInput = document.getElementById('setting-hero-image');
+    const currentHeroSpan = document.getElementById('current-hero-image');
 
     const btn = document.getElementById('save-settings-btn');
-    const inputs = [usdInput, tiktokInput, fbInput, instaInput, locPinInput, mapImgInput].filter(i => i);
+    const inputs = [usdInput, tiktokInput, fbInput, instaInput, locPinInput, mapImgInput, heroImgInput].filter(i => i);
 
     inputs.forEach(i => i.disabled = true);
     if(btn) {
@@ -613,6 +615,12 @@ async function loadSettings() {
              if(currentMapSpan) currentMapSpan.textContent = settings['MAP_IMAGE'].split('/').pop();
         } else {
              if(currentMapSpan) currentMapSpan.textContent = 'Default';
+        }
+
+        if (settings['HERO_IMAGE']) {
+             if(currentHeroSpan) currentHeroSpan.textContent = settings['HERO_IMAGE'].split('/').pop();
+        } else {
+             if(currentHeroSpan) currentHeroSpan.textContent = 'Default';
         }
     }
 
@@ -671,6 +679,27 @@ async function handleSaveSettings(e) {
                 .getPublicUrl(filePath);
 
             updates.push({ key: 'MAP_IMAGE', value: publicData.publicUrl });
+        }
+
+        // Handle Hero Image Upload
+        const heroInput = document.getElementById('setting-hero-image');
+        if (heroInput && heroInput.files.length > 0) {
+            const file = heroInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `hero-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `public/${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('vehicle-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicData } = supabase.storage
+                .from('vehicle-images')
+                .getPublicUrl(filePath);
+
+            updates.push({ key: 'HERO_IMAGE', value: publicData.publicUrl });
         }
 
         const { error } = await supabase
