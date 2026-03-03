@@ -1,5 +1,5 @@
 /**
- * Agance online - Main Application Logic
+ * AganceOnline - Main Application Logic
  *
  * This script handles:
  * 1. Global State Management (Theme, Language, Currency, Favorites).
