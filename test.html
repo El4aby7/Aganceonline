@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button class="test-btn">
+    <span>Click me</span>
+</button>
+<script>
+    const btns = document.querySelectorAll('.test-btn');
+    btns.forEach(btn => btn.addEventListener('click', () => console.log('clicked')));
+</script>
+</body>
+</html>
