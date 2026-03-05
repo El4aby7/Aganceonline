@@ -18,15 +18,6 @@ A premium automotive dealership website featuring a modern, responsive design wi
 
 This project uses Supabase for the backend (Database & Auth).
 
-1.  **Initial Setup:** Follow the instructions in `SUPABASE_SETUP.md` to create tables and policies.
-2.  **Fix & Updates:** Run the SQL commands in `fix_rls_and_update_schema.sql` to:
-    *   Allow authenticated users (admins) to create inquiries (fixes RLS error).
-    *   Add a `resolved` status column to inquiries.
-    *   Enable admin management (update/delete) for inquiries.
-3.  **Brands Feature:** Run the SQL commands in `update_brands_schema.sql` to:
-    *   Create the `brands` table.
-    *   Add `brand_id` to the `products` table.
-
 ## Admin Dashboard
 
 The application includes a protected Admin Dashboard (`admin.html`) for managing content.
