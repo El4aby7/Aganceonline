@@ -85,15 +85,15 @@ async function init() {
     setTheme(currentTheme);
 
     // Bind Global Event Listeners
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+    const themeToggles = document.querySelectorAll('.theme-toggle');
+    themeToggles.forEach(toggle => toggle.addEventListener('click', toggleTheme));
 
-    const langToggle = document.getElementById('lang-toggle');
-    if (langToggle) langToggle.addEventListener('click', toggleLanguage);
+    const langToggles = document.querySelectorAll('.lang-toggle');
+    langToggles.forEach(toggle => toggle.addEventListener('click', toggleLanguage));
 
-    const currencyToggle = document.getElementById('currency-toggle');
-    if (currencyToggle) {
-        currencyToggle.addEventListener('click', toggleCurrency);
+    const currencyToggles = document.querySelectorAll('.currency-toggle');
+    if (currencyToggles.length > 0) {
+        currencyToggles.forEach(toggle => toggle.addEventListener('click', toggleCurrency));
         updateCurrencyButtonText();
     }
 
@@ -163,13 +163,13 @@ function toggleTheme() {
 }
 
 /**
- * Updates the theme toggle icon in the header.
+ * Updates the theme toggle icon in the header and mobile menu.
  */
 function updateThemeIcon() {
-    const icon = document.querySelector('#theme-toggle span');
-    if (icon) {
+    const icons = document.querySelectorAll('.theme-icon');
+    icons.forEach(icon => {
         icon.textContent = currentTheme === 'dark' ? 'light_mode' : 'dark_mode';
-    }
+    });
 }
 
 /**
@@ -249,10 +249,10 @@ function toggleCurrency() {
 }
 
 function updateCurrencyButtonText() {
-    const btn = document.getElementById('currency-text');
-    if (btn && translations[currentLang]) {
+    const btns = document.querySelectorAll('.currency-text');
+    if (btns.length > 0 && translations[currentLang]) {
         const label = currentCurrency === 'USD' ? translations[currentLang].price_usd : translations[currentLang].price_egp;
-        btn.textContent = label;
+        btns.forEach(btn => btn.textContent = label);
     }
 }
 
