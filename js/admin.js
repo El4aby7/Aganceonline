@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentUser = null;
 let currentProducts = [];
 let currentInquiries = [];
+let currentBrands = [];
 
 // Simple XSS protection
 const escapeHtml = (unsafe) => {
@@ -25,14 +26,19 @@ const userInfo = document.getElementById('user-info');
 const userEmailSpan = document.getElementById('user-email');
 
 const tabProducts = document.getElementById('tab-products');
+const tabBrands = document.getElementById('tab-brands');
 const tabInquiries = document.getElementById('tab-inquiries');
 const tabSettings = document.getElementById('tab-settings');
 const viewProducts = document.getElementById('view-products');
+const viewBrands = document.getElementById('view-brands');
 const viewInquiries = document.getElementById('view-inquiries');
 const viewSettings = document.getElementById('view-settings');
 
 const productModal = document.getElementById('product-modal');
 const productForm = document.getElementById('product-form');
+
+const brandModal = document.getElementById('brand-modal');
+const brandForm = document.getElementById('brand-form');
 
 async function initAdmin() {
     // 1. Auth State Listener
@@ -52,6 +58,7 @@ async function initAdmin() {
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
 
     tabProducts.addEventListener('click', () => switchTab('products'));
+    tabBrands.addEventListener('click', () => switchTab('brands'));
     tabInquiries.addEventListener('click', () => switchTab('inquiries'));
     tabSettings.addEventListener('click', () => switchTab('settings'));
 
@@ -64,6 +71,11 @@ async function initAdmin() {
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('product-form').addEventListener('submit', handleSaveProduct);
+
+    document.getElementById('add-brand-btn').addEventListener('click', () => openBrandModal());
+    document.getElementById('brand-modal-close').addEventListener('click', closeBrandModal);
+    document.getElementById('brand-modal-cancel').addEventListener('click', closeBrandModal);
+    document.getElementById('brand-form').addEventListener('submit', handleSaveBrand);
 
     // Settings
     document.getElementById('settings-form').addEventListener('submit', handleSaveSettings);
@@ -115,11 +127,12 @@ async function handleLogout() {
 function switchTab(tab) {
     // Hide all
     viewProducts.classList.add('hidden');
+    viewBrands.classList.add('hidden');
     viewInquiries.classList.add('hidden');
     viewSettings.classList.add('hidden');
 
     // Reset tabs
-    [tabProducts, tabInquiries, tabSettings].forEach(t => {
+    [tabProducts, tabBrands, tabInquiries, tabSettings].forEach(t => {
         t.classList.remove('border-primary', 'text-primary');
         t.classList.add('border-transparent', 'text-gray-500');
     });
@@ -130,6 +143,11 @@ function switchTab(tab) {
         tabProducts.classList.add('border-primary', 'text-primary');
         tabProducts.classList.remove('border-transparent', 'text-gray-500');
         loadProducts();
+    } else if (tab === 'brands') {
+        viewBrands.classList.remove('hidden');
+        tabBrands.classList.add('border-primary', 'text-primary');
+        tabBrands.classList.remove('border-transparent', 'text-gray-500');
+        loadBrands();
     } else if (tab === 'inquiries') {
         viewInquiries.classList.remove('hidden');
         tabInquiries.classList.add('border-primary', 'text-primary');
@@ -162,6 +180,20 @@ async function loadProducts() {
 
     currentProducts = data;
     renderProducts(data);
+
+    // Also load brands in the background for the product modal
+    loadBrandsForModal();
+}
+
+async function loadBrandsForModal() {
+    const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (!error && data) {
+        currentBrands = data;
+    }
 }
 
 function renderProducts(products) {
@@ -219,6 +251,9 @@ function openModal(product = null) {
     const title = document.getElementById('modal-title');
     const form = document.getElementById('product-form');
 
+    // Initialize Brand Selector
+    renderBrandSelector(product ? product.brand_id : null);
+
     if (product) {
         editingId = product.id;
         title.textContent = 'Edit Vehicle';
@@ -246,10 +281,51 @@ function openModal(product = null) {
         form.reset();
         currentGallery = [];
         renderGallery();
+        document.getElementById('p-brand-id').value = ''; // Ensure brand is empty for new
     }
 
     document.getElementById('p-gallery-upload').value = '';
 }
+
+function renderBrandSelector(selectedBrandId) {
+    const container = document.getElementById('p-brand-container');
+    const brandIdInput = document.getElementById('p-brand-id');
+
+    if (currentBrands.length === 0) {
+        container.innerHTML = '<span class="text-sm text-gray-500">No brands available. Please add a brand first.</span>';
+        brandIdInput.value = '';
+        return;
+    }
+
+    container.innerHTML = currentBrands.map(brand => {
+        const isSelected = selectedBrandId === brand.id;
+        return `
+            <button type="button"
+                onclick="selectBrand(${brand.id}, this)"
+                class="brand-select-btn flex-none w-20 h-20 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-black/20
+                ${isSelected ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-gray-300'}">
+                <img src="${escapeHtml(brand.logo_url)}" alt="${escapeHtml(brand.name)}" class="max-w-full max-h-full object-contain">
+            </button>
+        `;
+    }).join('');
+
+    if (selectedBrandId) {
+        brandIdInput.value = selectedBrandId;
+    }
+}
+
+window.selectBrand = function(id, btn) {
+    document.getElementById('p-brand-id').value = id;
+
+    // Update visuals
+    document.querySelectorAll('.brand-select-btn').forEach(b => {
+        b.classList.remove('border-primary', 'ring-2', 'ring-primary/50');
+        b.classList.add('border-gray-200', 'dark:border-white/10', 'opacity-70');
+    });
+
+    btn.classList.remove('border-gray-200', 'dark:border-white/10', 'opacity-70');
+    btn.classList.add('border-primary', 'ring-2', 'ring-primary/50');
+};
 
 function closeModal() {
     productModal.classList.add('hidden');
@@ -287,6 +363,12 @@ async function handleSaveProduct(e) {
         const category = document.getElementById('p-category').value;
         const featured = document.getElementById('p-featured').checked;
         const description = document.getElementById('p-desc').value;
+        const brandId = document.getElementById('p-brand-id').value;
+
+        if (!brandId) {
+            alert('Please select a brand.');
+            return;
+        }
 
         const details = {
             mileage: document.getElementById('p-mileage').value,
@@ -373,6 +455,7 @@ async function handleSaveProduct(e) {
         const payload = {
             name,
             price_usd: price,
+            brand_id: parseInt(brandId),
             category,
             featured,
             description,
@@ -570,6 +653,185 @@ window.deleteInquiry = async function(id) {
         filterInquiries();
     }
 };
+
+// --- Brand Logic ---
+
+let editingBrandId = null;
+
+async function loadBrands() {
+    const tbody = document.getElementById('brands-table-body');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center">Loading...</td></tr>';
+
+    const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error(error);
+        if(tbody) tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-red-500">Failed to load brands</td></tr>';
+        return;
+    }
+
+    currentBrands = data;
+    renderBrands(data);
+}
+
+function renderBrands(brands) {
+    const tbody = document.getElementById('brands-table-body');
+    if (!tbody) return;
+
+    if (brands.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center">No brands found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = brands.map(b => `
+        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <td class="px-6 py-4">
+                <div class="h-10 w-16 bg-white dark:bg-black/20 rounded flex items-center justify-center p-1 border border-gray-200 dark:border-white/10">
+                    <img src="${escapeHtml(b.logo_url)}" class="max-h-full max-w-full object-contain" alt="${escapeHtml(b.name)}">
+                </div>
+            </td>
+            <td class="px-6 py-4 font-medium">${escapeHtml(b.name)}</td>
+            <td class="px-6 py-4 text-right">
+                <button onclick="editBrand(${b.id})" class="text-blue-500 hover:text-blue-400 font-medium text-xs mr-3">Edit</button>
+                <button onclick="deleteBrand(${b.id})" class="text-red-500 hover:text-red-400 font-medium text-xs">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openBrandModal(brand = null) {
+    brandModal.classList.remove('hidden');
+    const title = document.getElementById('brand-modal-title');
+    const form = document.getElementById('brand-form');
+    const previewContainer = document.getElementById('b-logo-preview');
+    const previewImg = document.getElementById('b-logo-img');
+
+    if (brand) {
+        editingBrandId = brand.id;
+        title.textContent = 'Edit Brand';
+        document.getElementById('b-name').value = brand.name;
+
+        previewImg.src = brand.logo_url;
+        previewContainer.classList.remove('hidden');
+    } else {
+        editingBrandId = null;
+        title.textContent = 'Add New Brand';
+        form.reset();
+        previewContainer.classList.add('hidden');
+        previewImg.src = '';
+    }
+
+    document.getElementById('b-logo').value = '';
+}
+
+function closeBrandModal() {
+    brandModal.classList.add('hidden');
+}
+
+window.editBrand = function(id) {
+    const brand = currentBrands.find(b => b.id === id);
+    if (brand) openBrandModal(brand);
+};
+
+window.deleteBrand = async function(id) {
+    // Check if any products use this brand
+    const { count, error: countError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('brand_id', id);
+
+    if (count > 0) {
+        alert(`Cannot delete this brand because it is assigned to ${count} vehicle(s). Please reassign or delete those vehicles first.`);
+        return;
+    }
+
+    if (!confirm('Are you sure you want to delete this brand?')) return;
+
+    const { error } = await supabase.from('brands').delete().eq('id', id);
+    if (error) {
+        alert('Error deleting: ' + error.message);
+    } else {
+        loadBrands();
+        // Also reload products to update state
+        loadProducts();
+    }
+};
+
+async function handleSaveBrand(e) {
+    e.preventDefault();
+    const btn = document.getElementById('save-brand-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+        const name = document.getElementById('b-name').value;
+        const fileInput = document.getElementById('b-logo');
+        let logoUrl = null;
+
+        // Ensure new brand has a logo
+        if (!editingBrandId && fileInput.files.length === 0) {
+            alert('Please select a logo image for the brand.');
+            return;
+        }
+
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `brand-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `public/${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('vehicle-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicData } = supabase.storage
+                .from('vehicle-images')
+                .getPublicUrl(filePath);
+
+            logoUrl = publicData.publicUrl;
+        }
+
+        const payload = { name };
+        if (logoUrl) {
+            payload.logo_url = logoUrl;
+        }
+
+        let error;
+        if (editingBrandId) {
+            const { error: err } = await supabase
+                .from('brands')
+                .update(payload)
+                .eq('id', editingBrandId);
+            error = err;
+        } else {
+            const { error: err } = await supabase
+                .from('brands')
+                .insert(payload);
+            error = err;
+        }
+
+        if (error) throw error;
+
+        closeBrandModal();
+        loadBrands();
+        // Reload products so the brand selector updates for future product edits
+        loadProducts();
+
+    } catch (err) {
+        console.error(err);
+        alert('Failed to save brand: ' + err.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
 
 // --- Settings Logic ---
 

@@ -15,6 +15,8 @@ let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
 let translations = {};
 let products = [];
+let brands = [];
+let activeBrandFilters = [];
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
 // Simple XSS protection
@@ -100,6 +102,7 @@ async function init() {
 
     // Load Data First
     await fetchExchangeRate();
+    await loadBrands();
     await loadProducts();
     await loadGlobalSettings();
 
@@ -377,6 +380,21 @@ async function loadGlobalSettings() {
     }
 }
 
+async function loadBrands() {
+    try {
+        const { data, error } = await supabase
+            .from('brands')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        brands = data;
+    } catch (error) {
+        console.error('Failed to load brands', error);
+        brands = [];
+    }
+}
+
 async function loadProducts() {
     try {
         const { data, error } = await supabase
@@ -415,6 +433,9 @@ function loadInventory() {
     const container = document.getElementById('inventory-container');
     if (!container) return;
 
+    // Render Brand Filters
+    renderBrandFilters();
+
     // Initial render
     filterInventory();
 
@@ -429,6 +450,50 @@ function loadInventory() {
         categorySelect.addEventListener('change', filterInventory);
     }
 }
+
+function renderBrandFilters() {
+    const wrapper = document.getElementById('brand-filters-wrapper');
+    const container = document.getElementById('brand-filters-container');
+
+    if (!wrapper || !container) return;
+
+    if (brands.length === 0) {
+        wrapper.classList.add('hidden');
+        return;
+    }
+
+    wrapper.classList.remove('hidden');
+
+    container.innerHTML = brands.map(brand => {
+        const isActive = activeBrandFilters.includes(brand.id);
+        return `
+            <button type="button"
+                onclick="toggleBrandFilter(${brand.id}, this)"
+                class="brand-filter-btn flex-none w-16 h-16 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-black/20
+                ${isActive ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-gray-300'}"
+                title="${escapeHtml(brand.name)}">
+                <img src="${escapeHtml(brand.logo_url)}" alt="${escapeHtml(brand.name)}" class="max-w-full max-h-full object-contain pointer-events-none">
+            </button>
+        `;
+    }).join('');
+}
+
+window.toggleBrandFilter = function(brandId, btn) {
+    const index = activeBrandFilters.indexOf(brandId);
+    if (index === -1) {
+        // Add to active filters
+        activeBrandFilters.push(brandId);
+        btn.classList.remove('border-gray-200', 'dark:border-white/10', 'opacity-70');
+        btn.classList.add('border-primary', 'ring-2', 'ring-primary/50');
+    } else {
+        // Remove from active filters
+        activeBrandFilters.splice(index, 1);
+        btn.classList.remove('border-primary', 'ring-2', 'ring-primary/50');
+        btn.classList.add('border-gray-200', 'dark:border-white/10', 'opacity-70');
+    }
+
+    filterInventory();
+};
 
 /**
  * Filters inventory based on search term and category selection.
@@ -448,12 +513,13 @@ function filterInventory() {
         const nameAr = p.name_ar ? p.name_ar.toLowerCase() : '';
         const matchesTerm = nameEn.includes(term) || nameAr.includes(term);
 
-        // Category check: exact match on English category (simplest for now as filter dropdown is English keys or translated keys?)
-        // The filter dropdown values are likely English (e.g. "SUV").
-        // If we translate the dropdown options, we need to map them back.
-        // For now, assuming the dropdown value corresponds to `p.category` (English).
+        // Category check
         const matchesCategory = category === '' || (p.category && p.category === category);
-        return matchesTerm && matchesCategory;
+
+        // Brand check
+        const matchesBrand = activeBrandFilters.length === 0 || activeBrandFilters.includes(p.brand_id);
+
+        return matchesTerm && matchesCategory && matchesBrand;
     });
 
     container.innerHTML = filtered.map(product => createProductCard(product)).join('');
