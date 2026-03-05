@@ -84,18 +84,8 @@ async function init() {
     // Apply initial preferences
     setTheme(currentTheme);
 
-    // Bind Global Event Listeners
-    const themeToggles = document.querySelectorAll('.theme-toggle');
-    themeToggles.forEach(toggle => toggle.addEventListener('click', toggleTheme));
-
-    const langToggles = document.querySelectorAll('.lang-toggle');
-    langToggles.forEach(toggle => toggle.addEventListener('click', toggleLanguage));
-
-    const currencyToggles = document.querySelectorAll('.currency-toggle');
-    if (currencyToggles.length > 0) {
-        currencyToggles.forEach(toggle => toggle.addEventListener('click', toggleCurrency));
-        updateCurrencyButtonText();
-    }
+    // Update button text for currency early
+    updateCurrencyButtonText();
 
     // Setup Mobile Menu
     setupMobileMenu();
@@ -158,7 +148,7 @@ function setTheme(theme) {
 /**
  * Toggles between light and dark themes.
  */
-function toggleTheme() {
+window.toggleTheme = function() {
     setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 }
 
@@ -211,7 +201,7 @@ async function setLanguage(lang, shouldRender = true) {
     }
 }
 
-function toggleLanguage() {
+window.toggleLanguage = function() {
     setLanguage(currentLang === 'en' ? 'ar' : 'en');
 }
 
@@ -244,7 +234,7 @@ function setCurrency(currency) {
     updateCurrencyButtonText();
 }
 
-function toggleCurrency() {
+window.toggleCurrency = function() {
     setCurrency(currentCurrency === 'USD' ? 'EGP' : 'USD');
 }
 
