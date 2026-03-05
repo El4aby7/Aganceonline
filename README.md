@@ -23,6 +23,9 @@ This project uses Supabase for the backend (Database & Auth).
     *   Allow authenticated users (admins) to create inquiries (fixes RLS error).
     *   Add a `resolved` status column to inquiries.
     *   Enable admin management (update/delete) for inquiries.
+3.  **Brands Feature:** Run the SQL commands in `update_brands_schema.sql` to:
+    *   Create the `brands` table.
+    *   Add `brand_id` to the `products` table.
 
 ## Admin Dashboard
 
