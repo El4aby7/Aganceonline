@@ -840,6 +840,7 @@ async function loadSettings() {
     const tiktokInput = document.getElementById('setting-social-tiktok');
     const fbInput = document.getElementById('setting-social-facebook');
     const instaInput = document.getElementById('setting-social-instagram');
+    const whatsappInput = document.getElementById('setting-social-whatsapp');
     const locPinInput = document.getElementById('setting-location-pin');
     const mapImgInput = document.getElementById('setting-map-image');
     const currentMapSpan = document.getElementById('current-map-image');
@@ -847,7 +848,7 @@ async function loadSettings() {
     const currentHeroSpan = document.getElementById('current-hero-image');
 
     const btn = document.getElementById('save-settings-btn');
-    const inputs = [usdInput, tiktokInput, fbInput, instaInput, locPinInput, mapImgInput, heroImgInput].filter(i => i);
+    const inputs = [usdInput, tiktokInput, fbInput, instaInput, whatsappInput, locPinInput, mapImgInput, heroImgInput].filter(i => i);
 
     inputs.forEach(i => i.disabled = true);
     if(btn) {
@@ -871,6 +872,7 @@ async function loadSettings() {
         if (tiktokInput && settings['SOCIAL_TIKTOK']) tiktokInput.value = settings['SOCIAL_TIKTOK'];
         if (fbInput && settings['SOCIAL_FACEBOOK']) fbInput.value = settings['SOCIAL_FACEBOOK'];
         if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
+        if (whatsappInput && settings['SOCIAL_WHATSAPP']) whatsappInput.value = settings['SOCIAL_WHATSAPP'];
         if (locPinInput && settings['LOCATION_PIN']) locPinInput.value = settings['LOCATION_PIN'];
 
         if (settings['MAP_IMAGE']) {
@@ -919,6 +921,7 @@ async function handleSaveSettings(e) {
             { key: 'SOCIAL_TIKTOK', value: document.getElementById('setting-social-tiktok').value },
             { key: 'SOCIAL_FACEBOOK', value: document.getElementById('setting-social-facebook').value },
             { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
+            { key: 'SOCIAL_WHATSAPP', value: document.getElementById('setting-social-whatsapp').value },
             { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
         ];
 
