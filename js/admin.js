@@ -841,6 +841,7 @@ async function loadSettings() {
     const fbInput = document.getElementById('setting-social-facebook');
     const instaInput = document.getElementById('setting-social-instagram');
     const whatsappInput = document.getElementById('setting-social-whatsapp');
+    const phoneInput = document.getElementById('setting-social-phone');
     const locPinInput = document.getElementById('setting-location-pin');
     const mapEmbedInput = document.getElementById('setting-map-embed');
     const heroImgInput = document.getElementById('setting-hero-image');
@@ -872,6 +873,7 @@ async function loadSettings() {
         if (fbInput && settings['SOCIAL_FACEBOOK']) fbInput.value = settings['SOCIAL_FACEBOOK'];
         if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
         if (whatsappInput && settings['SOCIAL_WHATSAPP']) whatsappInput.value = settings['SOCIAL_WHATSAPP'];
+        if (settings['SOCIAL_PHONE'] && phoneInput) phoneInput.value = settings['SOCIAL_PHONE'];
         if (locPinInput && settings['LOCATION_PIN']) locPinInput.value = settings['LOCATION_PIN'];
         if (mapEmbedInput && settings['MAP_EMBED']) mapEmbedInput.value = settings['MAP_EMBED'];
 
@@ -918,6 +920,7 @@ async function handleSaveSettings(e) {
             { key: 'SOCIAL_WHATSAPP', value: document.getElementById('setting-social-whatsapp').value },
             { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
             { key: 'MAP_EMBED', value: document.getElementById('setting-map-embed').value },
+            { key: 'SOCIAL_PHONE', value: document.getElementById('setting-social-phone').value },
         ];
 
         // Handle Hero Image Upload

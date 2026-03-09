@@ -66,7 +66,9 @@
     "sunday": "Sunday",
     "closed": "Closed",
     "favorites_title": "Your Favorites",
-    "no_favorites": "You haven't added any favorites yet."
+    "no_favorites": "You haven't added any favorites yet.",
+    "opt_sales": "Sales Inquiry",
+    "opt_complaint": "Make a complaint"
   },
   "ar": {
     "header_title": "اجانس اونلاين",
@@ -135,6 +137,8 @@
     "sunday": "الأحد",
     "closed": "مغلق",
     "favorites_title": "المفضلة لديك",
-    "no_favorites": "لم تقم بإضافة أي سيارات للمفضلة بعد."
+    "no_favorites": "لم تقم بإضافة أي سيارات للمفضلة بعد.",
+    "opt_sales": "استفسار عن المبيعات",
+    "opt_complaint": "تقديم شكوى"
   }
 }
