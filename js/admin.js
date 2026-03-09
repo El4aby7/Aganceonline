@@ -348,6 +348,9 @@ function openModal(product = null) {
             document.getElementById('p-mileage').value = product.details.mileage || '';
             document.getElementById('p-trans').value = product.details.transmission || '';
             document.getElementById('p-fuel').value = product.details.fuel || '';
+            document.getElementById('p-upon-request').checked = product.details.upon_request || false;
+        } else {
+            document.getElementById('p-upon-request').checked = false;
         }
 
         // Handle Gallery
@@ -444,6 +447,7 @@ async function handleSaveProduct(e) {
         const featured = document.getElementById('p-featured').checked;
         const description = document.getElementById('p-desc').value;
         const brandId = document.getElementById('p-brand-id').value;
+        const uponRequest = document.getElementById('p-upon-request').checked;
 
         if (!brandId) {
             showToast('Please select a brand.', 'warning');
@@ -455,7 +459,8 @@ async function handleSaveProduct(e) {
         const details = {
             mileage: document.getElementById('p-mileage').value,
             transmission: document.getElementById('p-trans').value,
-            fuel: document.getElementById('p-fuel').value
+            fuel: document.getElementById('p-fuel').value,
+            upon_request: uponRequest
         };
 
         // 2. Handle Image Upload
