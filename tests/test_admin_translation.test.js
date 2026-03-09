@@ -35,6 +35,8 @@ global.window = {
 };
 global.alert = jest.fn();
 global.confirm = jest.fn().mockReturnValue(true);
+global.showToast = jest.fn();
+global.showConfirm = jest.fn((msg, cb) => cb());
 global.console = {
     log: jest.fn(),
     error: jest.fn(),
@@ -95,7 +97,7 @@ describe('handleSaveProduct', () => {
         await admin.handleSaveProduct(event);
 
         expect(console.error).toHaveBeenCalledWith('Translation API Error:', expect.anything());
-        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Translation failed'));
+        expect(global.showToast).toHaveBeenCalledWith(expect.stringContaining('Translation failed'), 'warning');
 
         // Should still insert product
         expect(global.supabase.from).toHaveBeenCalledWith('products');
@@ -128,7 +130,7 @@ describe('handleSaveProduct', () => {
         await admin.handleSaveProduct(event);
 
         expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('No active session'));
-        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('session has expired'));
+        expect(global.showToast).toHaveBeenCalledWith(expect.stringContaining('session has expired'), 'error');
 
         // Function should NOT be called
         expect(global.supabase.functions.invoke).not.toHaveBeenCalled();

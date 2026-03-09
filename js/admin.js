@@ -7,6 +7,84 @@ let currentProducts = [];
 let currentInquiries = [];
 let currentBrands = [];
 
+// --- UI Utilities ---
+window.showToast = function(message, type = 'success') {
+    const existing = document.getElementById('custom-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'custom-toast';
+    toast.className = 'fixed bottom-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-xl font-medium text-white transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2';
+
+    let icon = 'info';
+    if (type === 'success') {
+        toast.classList.add('bg-green-600', 'dark:bg-green-700');
+        icon = 'check_circle';
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-600', 'dark:bg-red-700');
+        icon = 'error';
+    } else if (type === 'warning') {
+        toast.classList.add('bg-yellow-500', 'dark:bg-yellow-600');
+        icon = 'warning';
+    } else {
+        toast.classList.add('bg-gray-800', 'dark:bg-gray-700');
+    }
+
+    toast.innerHTML = `<span class="material-symbols-outlined">${icon}</span> <span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+    setTimeout(() => {
+        toast.classList.add('translate-y-full', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+};
+
+window.showConfirm = function(message, onConfirm) {
+    const existing = document.getElementById('custom-confirm-modal');
+    if (existing) existing.remove();
+
+    const modalHtml = `
+        <div id="custom-confirm-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+            <div class="bg-white dark:bg-surface-card w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-300">
+                <div class="flex items-center gap-4 mb-4 text-slate-900 dark:text-white">
+                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-500 flex-shrink-0">
+                        <span class="material-symbols-outlined text-[24px]">warning</span>
+                    </div>
+                    <h3 class="text-lg font-bold">Are you sure?</h3>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6 ml-16">${escapeHtml(message)}</p>
+                <div class="flex justify-end gap-3">
+                    <button id="confirm-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">Cancel</button>
+                    <button id="confirm-ok-btn" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors">Confirm</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = document.getElementById('custom-confirm-modal');
+    const inner = modal.querySelector('div');
+
+    // Trigger animation
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        inner.classList.remove('scale-95');
+    }, 10);
+
+    const closeModal = () => {
+        modal.classList.add('opacity-0');
+        inner.classList.add('scale-95');
+        setTimeout(() => modal.remove(), 300);
+    };
+
+    document.getElementById('confirm-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+        closeModal();
+        onConfirm();
+    });
+};
+
 // Simple XSS protection
 const escapeHtml = (unsafe) => {
     if (unsafe === null || unsafe === undefined) return '';
@@ -230,15 +308,16 @@ window.editProduct = function(id) {
     if (product) openModal(product);
 };
 
-window.deleteProduct = async function(id) {
-    if (!confirm('Are you sure you want to delete this vehicle?')) return;
-
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-        alert('Error deleting: ' + error.message);
-    } else {
-        loadProducts();
-    }
+window.deleteProduct = function(id) {
+    showConfirm('Are you sure you want to delete this vehicle?', async () => {
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+            showToast('Error deleting: ' + error.message, 'error');
+        } else {
+            showToast('Vehicle deleted successfully.', 'success');
+            loadProducts();
+        }
+    });
 };
 
 // --- Modal & Form Logic ---
@@ -344,9 +423,10 @@ function renderGallery() {
 }
 
 window.deleteGalleryImage = function(index) {
-    if (!confirm('Remove this image from gallery?')) return;
-    currentGallery.splice(index, 1);
-    renderGallery();
+    showConfirm('Remove this image from gallery?', () => {
+        currentGallery.splice(index, 1);
+        renderGallery();
+    });
 };
 
 async function handleSaveProduct(e) {
@@ -366,7 +446,9 @@ async function handleSaveProduct(e) {
         const brandId = document.getElementById('p-brand-id').value;
 
         if (!brandId) {
-            alert('Please select a brand.');
+            showToast('Please select a brand.', 'warning');
+            btn.textContent = originalText;
+            btn.disabled = false;
             return;
         }
 
@@ -424,7 +506,7 @@ async function handleSaveProduct(e) {
 
             if (!session) {
                 console.warn('No active session found. Aborting translation.');
-                alert('Your session has expired. Please refresh the page and log in again.');
+                showToast('Your session has expired. Please refresh the page and log in again.', 'error');
                 throw new Error('Session expired');
             }
 
@@ -433,13 +515,13 @@ async function handleSaveProduct(e) {
                 headers: {
                     Authorization: `Bearer ${session.access_token}`,
                     // Explicitly include apikey for Gateway
-                    apikey: window.SUPABASE_ANON_KEY
+                    apikey: typeof window !== 'undefined' && window.SUPABASE_ANON_KEY ? window.SUPABASE_ANON_KEY : (typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : '')
                 }
             });
 
             if (error) {
                 console.error('Translation API Error:', error);
-                alert('Warning: Translation failed. Please check the console for details. The product will be saved without Arabic descriptions.');
+                showToast('Warning: Translation failed. Saving without Arabic descriptions.', 'warning');
             } else {
                 console.log('Translation API Response:', data);
                 if (data && data.translatedText && Array.isArray(data.translatedText)) {
@@ -526,12 +608,13 @@ async function handleSaveProduct(e) {
 
         if (error) throw error;
 
+        showToast('Vehicle saved successfully!', 'success');
         closeModal();
         loadProducts();
 
     } catch (err) {
         console.error(err);
-        alert('Failed to save: ' + err.message);
+        showToast('Failed to save: ' + err.message, 'error');
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -627,7 +710,7 @@ window.toggleResolved = async function(id, checkbox) {
         .eq('id', id);
 
     if (error) {
-        alert('Error updating status: ' + error.message);
+        showToast('Error updating status: ' + error.message, 'error');
         checkbox.checked = !resolved; // Revert
         return;
     }
@@ -640,18 +723,19 @@ window.toggleResolved = async function(id, checkbox) {
     filterInquiries();
 };
 
-window.deleteInquiry = async function(id) {
-    if (!confirm('Are you sure you want to delete this inquiry?')) return;
+window.deleteInquiry = function(id) {
+    showConfirm('Are you sure you want to delete this inquiry?', async () => {
+        const { error } = await supabase.from('inquiries').delete().eq('id', id);
 
-    const { error } = await supabase.from('inquiries').delete().eq('id', id);
-
-    if (error) {
-        alert('Error deleting: ' + error.message);
-    } else {
-        // Remove from local state
-        currentInquiries = currentInquiries.filter(i => i.id !== id);
-        filterInquiries();
-    }
+        if (error) {
+            showToast('Error deleting: ' + error.message, 'error');
+        } else {
+            showToast('Inquiry deleted.', 'success');
+            // Remove from local state
+            currentInquiries = currentInquiries.filter(i => i.id !== id);
+            filterInquiries();
+        }
+    });
 };
 
 // --- Brand Logic ---
@@ -744,20 +828,21 @@ window.deleteBrand = async function(id) {
         .eq('brand_id', id);
 
     if (count > 0) {
-        alert(`Cannot delete this brand because it is assigned to ${count} vehicle(s). Please reassign or delete those vehicles first.`);
+        showToast(`Cannot delete this brand because it is assigned to ${count} vehicle(s). Please reassign or delete those vehicles first.`, 'error');
         return;
     }
 
-    if (!confirm('Are you sure you want to delete this brand?')) return;
-
-    const { error } = await supabase.from('brands').delete().eq('id', id);
-    if (error) {
-        alert('Error deleting: ' + error.message);
-    } else {
-        loadBrands();
-        // Also reload products to update state
-        loadProducts();
-    }
+    showConfirm('Are you sure you want to delete this brand?', async () => {
+        const { error } = await supabase.from('brands').delete().eq('id', id);
+        if (error) {
+            showToast('Error deleting: ' + error.message, 'error');
+        } else {
+            showToast('Brand deleted.', 'success');
+            loadBrands();
+            // Also reload products to update state
+            loadProducts();
+        }
+    });
 };
 
 async function handleSaveBrand(e) {
@@ -774,7 +859,9 @@ async function handleSaveBrand(e) {
 
         // Ensure new brand has a logo
         if (!editingBrandId && fileInput.files.length === 0) {
-            alert('Please select a logo image for the brand.');
+            showToast('Please select a logo image for the brand.', 'warning');
+            btn.textContent = originalText;
+            btn.disabled = false;
             return;
         }
 
@@ -818,6 +905,7 @@ async function handleSaveBrand(e) {
 
         if (error) throw error;
 
+        showToast('Brand saved successfully!', 'success');
         closeBrandModal();
         loadBrands();
         // Reload products so the brand selector updates for future product edits
@@ -825,7 +913,7 @@ async function handleSaveBrand(e) {
 
     } catch (err) {
         console.error(err);
-        alert('Failed to save brand: ' + err.message);
+        showToast('Failed to save brand: ' + err.message, 'error');
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -862,7 +950,7 @@ async function loadSettings() {
 
     if (error) {
         console.error(error);
-        alert('Failed to load settings');
+        showToast('Failed to load settings', 'error');
         if(usdInput) usdInput.value = '50'; // Default
     } else {
         const settings = {};
@@ -950,11 +1038,11 @@ async function handleSaveSettings(e) {
 
         if (error) throw error;
 
-        alert('Settings saved successfully!');
+        showToast('Settings saved successfully!', 'success');
         loadSettings(); // Refresh view
     } catch (err) {
         console.error(err);
-        alert('Failed to save settings: ' + err.message);
+        showToast('Failed to save settings: ' + err.message, 'error');
     } finally {
         if(btn) {
             btn.textContent = originalText;
