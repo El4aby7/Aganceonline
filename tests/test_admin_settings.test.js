@@ -46,6 +46,7 @@ describe('Admin Settings Logic', () => {
             confirm: jest.fn().mockReturnValue(true)
         };
         global.alert = jest.fn();
+        global.showToast = jest.fn();
 
         global.supabase = {
             auth: {
@@ -108,6 +109,6 @@ describe('Admin Settings Logic', () => {
         expect(Array.isArray(args)).toBe(true);
         expect(args).toContainEqual({ key: 'USD_TO_EGP', value: '60' });
 
-        expect(global.alert).toHaveBeenCalledWith('Settings saved successfully!');
+        expect(global.showToast).toHaveBeenCalledWith('Settings saved successfully!', 'success');
     });
 });

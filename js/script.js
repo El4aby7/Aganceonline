@@ -19,6 +19,47 @@ let brands = [];
 let activeBrandFilters = [];
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
+// --- UI Utilities ---
+window.showToast = function(message, type = 'success') {
+    // Remove existing toast if any
+    const existing = document.getElementById('custom-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'custom-toast';
+
+    // Base classes
+    toast.className = 'fixed bottom-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-xl font-medium text-white transition-all duration-300 transform translate-y-full opacity-0 flex items-center gap-2';
+
+    let icon = 'info';
+    if (type === 'success') {
+        toast.classList.add('bg-green-600', 'dark:bg-green-700');
+        icon = 'check_circle';
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-600', 'dark:bg-red-700');
+        icon = 'error';
+    } else if (type === 'warning') {
+        toast.classList.add('bg-yellow-500', 'dark:bg-yellow-600');
+        icon = 'warning';
+    } else {
+        toast.classList.add('bg-gray-800', 'dark:bg-gray-700');
+    }
+
+    toast.innerHTML = `<span class="material-symbols-outlined">${icon}</span> <span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => {
+        toast.classList.remove('translate-y-full', 'opacity-0');
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('translate-y-full', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+};
+
 // Simple XSS protection
 const escapeHtml = (unsafe) => {
     if (unsafe === null || unsafe === undefined) return '';
@@ -735,12 +776,12 @@ async function handleContactSubmit(e) {
 
         if (error) throw error;
 
-        alert('Thank you! Your message has been sent. We will contact you shortly.');
+        showToast('Thank you! Your message has been sent. We will contact you shortly.', 'success');
         e.target.reset();
 
     } catch (err) {
         console.error(err);
-        alert('Failed to send message: ' + err.message);
+        showToast('Failed to send message: ' + err.message, 'error');
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -814,12 +855,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (error) throw error;
 
-                alert('Inquiry sent successfully!');
+                showToast('Inquiry sent successfully!', 'success');
                 e.target.reset();
                 closeInquiryModal();
 
             } catch (err) {
-                alert('Error sending inquiry: ' + err.message);
+                showToast('Error sending inquiry: ' + err.message, 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
@@ -898,7 +939,7 @@ function createProductCard(product) {
  */
 function showDemoMessage() {
     const isAr = typeof currentLang !== 'undefined' && currentLang === 'ar';
-    alert(isAr ? "قريباً" : "Coming soon");
+    showToast(isAr ? "قريباً" : "Coming soon", 'info');
 }
 
 // --- Exports for Testing ---
