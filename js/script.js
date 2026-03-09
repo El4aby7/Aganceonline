@@ -346,11 +346,13 @@ async function loadGlobalSettings() {
         const fb = document.getElementById('social-facebook');
         const insta = document.getElementById('social-instagram');
         const whatsapp = document.getElementById('social-whatsapp');
+        const phone = document.getElementById('social-phone');
 
         if (tiktok && settings['SOCIAL_TIKTOK']) tiktok.href = settings['SOCIAL_TIKTOK'];
         if (fb && settings['SOCIAL_FACEBOOK']) fb.href = settings['SOCIAL_FACEBOOK'];
         if (insta && settings['SOCIAL_INSTAGRAM']) insta.href = settings['SOCIAL_INSTAGRAM'];
         if (whatsapp && settings['SOCIAL_WHATSAPP']) whatsapp.href = settings['SOCIAL_WHATSAPP'];
+        if (phone && settings['SOCIAL_PHONE']) phone.href = `tel:${settings['SOCIAL_PHONE'].replace(/\s+/g, '')}`;
 
         // Apply Floating WhatsApp Button
         if (settings['SOCIAL_WHATSAPP']) {
@@ -895,7 +897,8 @@ function createProductCard(product) {
  * Displays a demo message to the user.
  */
 function showDemoMessage() {
-    alert("Thank you for your interest! This website is currently a demo, and this feature is not yet active.");
+    const isAr = typeof currentLang !== 'undefined' && currentLang === 'ar';
+    alert(isAr ? "قريباً" : "Coming soon");
 }
 
 // --- Exports for Testing ---
