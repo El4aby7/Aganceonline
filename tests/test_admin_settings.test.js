@@ -51,7 +51,8 @@ describe('Admin Settings Logic', () => {
             auth: {
                 onAuthStateChange: jest.fn(),
                 signInWithPassword: jest.fn(),
-                signOut: jest.fn()
+                signOut: jest.fn(),
+                getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null })
             },
             from: jest.fn().mockReturnValue(mockSupabaseBuilder),
             storage: {
@@ -78,7 +79,8 @@ describe('Admin Settings Logic', () => {
 
         // We need to override the default mock
         global.supabase.from.mockReturnValue({
-            select: selectMock
+            select: selectMock,
+            upsert: jest.fn().mockResolvedValue({ error: null })
         });
 
         await admin.loadSettings();
@@ -92,7 +94,8 @@ describe('Admin Settings Logic', () => {
 
         const mockUpsert = jest.fn().mockResolvedValue({ error: null });
         global.supabase.from.mockReturnValue({
-            upsert: mockUpsert
+            upsert: mockUpsert,
+            select: jest.fn().mockResolvedValue({ data: [], error: null })
         });
 
         const event = { preventDefault: jest.fn() };

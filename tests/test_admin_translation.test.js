@@ -67,6 +67,7 @@ describe('handleSaveProduct', () => {
         // Mock form inputs
         mockInputs = {
             'p-name': { value: 'Car' },
+            'p-brand-id': { value: '1' },
             'p-price': { value: '1000' },
             'p-category': { value: 'SUV' },
             'p-featured': { checked: false },

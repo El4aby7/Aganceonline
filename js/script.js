@@ -371,8 +371,36 @@ async function loadGlobalSettings() {
         const mapContainer = document.getElementById('map-container');
 
         if (locPin && settings['LOCATION_PIN']) locPin.href = settings['LOCATION_PIN'];
-        if (mapContainer && settings['MAP_IMAGE']) {
-             mapContainer.style.backgroundImage = `url("${settings['MAP_IMAGE']}")`;
+
+        if (mapContainer) {
+            if (settings['MAP_EMBED']) {
+                // To safely render the iframe without allowing arbitrary scripts, we can either
+                // inject the raw string if we trust the admin, or carefully parse the src.
+                // Since this is from the admin dashboard (app_settings), we will insert the HTML
+                // but apply some classes to ensure it fits the container.
+
+                // A typical google maps iframe snippet looks like <iframe src="..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                // We'll replace width/height to make it responsive
+                let embedHtml = settings['MAP_EMBED'];
+
+                // Force full width/height
+                embedHtml = embedHtml.replace(/width="[^"]*"/i, 'width="100%"');
+                embedHtml = embedHtml.replace(/height="[^"]*"/i, 'height="100%"');
+
+                // Add a class for styling if it doesn't have one
+                if (!embedHtml.includes('class=')) {
+                    embedHtml = embedHtml.replace('<iframe', '<iframe class="w-full h-full border-0"');
+                } else {
+                    // It's harder to reliably append to an existing class attribute with regex without DOMParser,
+                    // but usually Google Maps iframes don't have classes by default.
+                }
+
+                mapContainer.innerHTML = embedHtml;
+                // Remove the flex/justify center classes used for the loading state to allow iframe to fill
+                mapContainer.classList.remove('flex', 'items-center', 'justify-center');
+            } else {
+                mapContainer.innerHTML = '<span class="text-gray-500 dark:text-gray-400">Map not available</span>';
+            }
         }
 
         // Apply Hero Image

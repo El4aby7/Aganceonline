@@ -842,13 +842,12 @@ async function loadSettings() {
     const instaInput = document.getElementById('setting-social-instagram');
     const whatsappInput = document.getElementById('setting-social-whatsapp');
     const locPinInput = document.getElementById('setting-location-pin');
-    const mapImgInput = document.getElementById('setting-map-image');
-    const currentMapSpan = document.getElementById('current-map-image');
+    const mapEmbedInput = document.getElementById('setting-map-embed');
     const heroImgInput = document.getElementById('setting-hero-image');
     const currentHeroSpan = document.getElementById('current-hero-image');
 
     const btn = document.getElementById('save-settings-btn');
-    const inputs = [usdInput, tiktokInput, fbInput, instaInput, whatsappInput, locPinInput, mapImgInput, heroImgInput].filter(i => i);
+    const inputs = [usdInput, tiktokInput, fbInput, instaInput, whatsappInput, locPinInput, mapEmbedInput, heroImgInput].filter(i => i);
 
     inputs.forEach(i => i.disabled = true);
     if(btn) {
@@ -874,12 +873,7 @@ async function loadSettings() {
         if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
         if (whatsappInput && settings['SOCIAL_WHATSAPP']) whatsappInput.value = settings['SOCIAL_WHATSAPP'];
         if (locPinInput && settings['LOCATION_PIN']) locPinInput.value = settings['LOCATION_PIN'];
-
-        if (settings['MAP_IMAGE']) {
-             if(currentMapSpan) currentMapSpan.textContent = settings['MAP_IMAGE'].split('/').pop();
-        } else {
-             if(currentMapSpan) currentMapSpan.textContent = 'Default';
-        }
+        if (mapEmbedInput && settings['MAP_EMBED']) mapEmbedInput.value = settings['MAP_EMBED'];
 
         if (settings['HERO_IMAGE']) {
              if(currentHeroSpan) currentHeroSpan.textContent = settings['HERO_IMAGE'].split('/').pop();
@@ -923,28 +917,8 @@ async function handleSaveSettings(e) {
             { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
             { key: 'SOCIAL_WHATSAPP', value: document.getElementById('setting-social-whatsapp').value },
             { key: 'LOCATION_PIN', value: document.getElementById('setting-location-pin').value },
+            { key: 'MAP_EMBED', value: document.getElementById('setting-map-embed').value },
         ];
-
-        // Handle Map Image Upload
-        const mapInput = document.getElementById('setting-map-image');
-        if (mapInput && mapInput.files.length > 0) {
-            const file = mapInput.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `map-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-            const filePath = `public/${fileName}`;
-
-            const { data, error: uploadError } = await supabase.storage
-                .from('vehicle-images') // Reusing existing bucket
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: publicData } = supabase.storage
-                .from('vehicle-images')
-                .getPublicUrl(filePath);
-
-            updates.push({ key: 'MAP_IMAGE', value: publicData.publicUrl });
-        }
 
         // Handle Hero Image Upload
         const heroInput = document.getElementById('setting-hero-image');
