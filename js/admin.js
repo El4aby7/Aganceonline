@@ -521,17 +521,28 @@ async function handleSaveProduct(e) {
 
             if (error) {
                 console.error('Translation API Error:', error);
-                showToast('Warning: Translation failed. Saving without Arabic descriptions.', 'warning');
+
+                // Try to extract a more specific error message from the response
+                let errorMsg = error.message || 'Translation failed. Saving without Arabic descriptions.';
+                if (error.context && error.context.json && error.context.json.error) {
+                    errorMsg = error.context.json.error;
+                }
+
+                showToast(`Translation Warning: ${errorMsg}`, 'warning');
             } else {
                 console.log('Translation API Response:', data);
-                if (data && data.translatedText && Array.isArray(data.translatedText)) {
+                if (data && data.error) {
+                    console.error('Translation returned error payload:', data.error);
+                    showToast(`Translation Warning: ${data.error}`, 'warning');
+                } else if (data && data.translatedText && Array.isArray(data.translatedText)) {
                      [nameAr, descAr, categoryAr, mileageAr, transAr, fuelAr] = data.translatedText;
                 } else {
                     console.warn('Unexpected translation response format:', data);
                 }
             }
         } catch (transErr) {
-            console.warn('Translation skipped due to error:', transErr);
+            console.error('Translation skipped due to exception:', transErr);
+            showToast(`Translation Error: ${transErr.message || transErr}`, 'error');
         }
 
         const payload = {
