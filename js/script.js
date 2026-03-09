@@ -660,7 +660,43 @@ async function loadDetails() {
         return;
     }
 
+
     // Render Main Details
+    // Dynamic SEO Updates
+    if (product) {
+        document.title = `${product.name} - AganceOnline`;
+
+        // Update meta description
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', (product.description || product.description_ar || 'Explore this premium vehicle at AganceOnline.'));
+
+        // Update Open Graph Tags
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', `${product.name} - AganceOnline`);
+
+        const ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc) ogDesc.setAttribute('content', (product.description || product.description_ar || 'Explore this premium vehicle at AganceOnline.'));
+
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        if (ogImage && product.image_url) ogImage.setAttribute('content', product.image_url);
+
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+
+        // Update Twitter Tags
+        const twTitle = document.querySelector('meta[property="twitter:title"]');
+        if (twTitle) twTitle.setAttribute('content', `${product.name} - AganceOnline`);
+
+        const twDesc = document.querySelector('meta[property="twitter:description"]');
+        if (twDesc) twDesc.setAttribute('content', (product.description || product.description_ar || 'Explore this premium vehicle at AganceOnline.'));
+
+        const twImage = document.querySelector('meta[property="twitter:image"]');
+        if (twImage && product.image_url) twImage.setAttribute('content', product.image_url);
+
+        const twUrl = document.querySelector('meta[property="twitter:url"]');
+        if (twUrl) twUrl.setAttribute('content', window.location.href);
+    }
+
     const mainImg = document.getElementById('main-image');
     if (mainImg) mainImg.src = product.image_url;
 

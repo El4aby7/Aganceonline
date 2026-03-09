@@ -37,6 +37,18 @@ describe('loadDetails', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
+        // Provide mock elements for getElementById and querySelector
+        const mockElement = {
+            innerHTML: '',
+            textContent: '',
+            style: {},
+            setAttribute: jest.fn(),
+            classList: { add: jest.fn(), remove: jest.fn() }
+        };
+        global.document.getElementById.mockReturnValue(mockElement);
+        global.document.querySelector.mockReturnValue(mockElement);
+
+
         // Reset window location
         window.location.search = '?id=1';
 
@@ -70,10 +82,10 @@ describe('loadDetails', () => {
             if (id === 'vehicle-price') return price;
             if (id === 'vehicle-desc') return desc;
             if (id === 'main-image') return img;
-            if (id === 'spec-mileage') return { textContent: '' };
-            if (id === 'spec-trans') return { textContent: '' };
-            if (id === 'spec-fuel') return { textContent: '' };
-            return { innerHTML: '', addEventListener: jest.fn() };
+            if (id === 'spec-mileage') return { textContent: '', style: {} };
+            if (id === 'spec-trans') return { textContent: '', style: {} };
+            if (id === 'spec-fuel') return { textContent: '', style: {} };
+            return { innerHTML: '', addEventListener: jest.fn(), style: {}, textContent: '', setAttribute: jest.fn(), classList: { add: jest.fn(), remove: jest.fn() }, remove: jest.fn(), appendChild: jest.fn() };
         });
     });
 
