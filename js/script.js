@@ -388,12 +388,14 @@ async function loadGlobalSettings() {
         const insta = document.getElementById('social-instagram');
         const whatsapp = document.getElementById('social-whatsapp');
         const phone = document.getElementById('social-phone');
+        const phoneDetails = document.getElementById('social-phone-details');
 
         if (tiktok && settings['SOCIAL_TIKTOK']) tiktok.href = settings['SOCIAL_TIKTOK'];
         if (fb && settings['SOCIAL_FACEBOOK']) fb.href = settings['SOCIAL_FACEBOOK'];
         if (insta && settings['SOCIAL_INSTAGRAM']) insta.href = settings['SOCIAL_INSTAGRAM'];
         if (whatsapp && settings['SOCIAL_WHATSAPP']) whatsapp.href = settings['SOCIAL_WHATSAPP'];
         if (phone && settings['SOCIAL_PHONE']) phone.href = `tel:${settings['SOCIAL_PHONE'].replace(/\s+/g, '')}`;
+        if (phoneDetails && settings['SOCIAL_PHONE']) phoneDetails.href = `tel:${settings['SOCIAL_PHONE'].replace(/\s+/g, '')}`;
 
         // Apply Floating WhatsApp Button
         if (settings['SOCIAL_WHATSAPP']) {
@@ -671,6 +673,28 @@ async function loadDetails() {
     document.getElementById('vehicle-price').setAttribute('data-price-usd', product.price_usd);
     document.getElementById('vehicle-desc').textContent = displayDesc;
 
+    // Badges
+    const newArrivalBadge = document.getElementById('badge-new-arrival');
+    if (newArrivalBadge) {
+        newArrivalBadge.style.display = (product.category === 'New Arrival') ? 'inline-block' : 'none';
+    }
+
+    const detailsBadges = document.getElementById('details-badges');
+    if (detailsBadges) {
+        // Remove existing upon request badge if any to prevent duplicates on re-render
+        const existingUrBadge = document.getElementById('badge-upon-request');
+        if (existingUrBadge) existingUrBadge.remove();
+
+        if (product.details && product.details.upon_request) {
+            const urBadge = document.createElement('span');
+            urBadge.id = 'badge-upon-request';
+            urBadge.className = 'bg-black text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider';
+            urBadge.setAttribute('data-i18n', 'upon_request');
+            urBadge.textContent = 'Upon Request';
+            detailsBadges.appendChild(urBadge);
+        }
+    }
+
     // Specs
     const displayMileage = (isAr && product.details_ar?.mileage) ? product.details_ar.mileage : product.details.mileage;
     const displayTrans = (isAr && product.details_ar?.transmission) ? product.details_ar.transmission : product.details.transmission;
@@ -897,6 +921,10 @@ function createProductCard(product) {
         ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">${escapeHtml(product.category_ar)}</span>`
         : (product.category ? `<span class="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" data-i18n="${escapeHtml(product.category.toLowerCase().replace(' ', '_'))}">${escapeHtml(product.category)}</span>` : '');
 
+    const uponRequestBadge = (product.details && product.details.upon_request)
+        ? `<span class="bg-black/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded mt-1" data-i18n="upon_request">Upon Request</span>`
+        : '';
+
     return `
     <div class="group relative flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-card border border-gray-200 dark:border-white/5 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
         <div class="relative aspect-[16/10] overflow-hidden">
@@ -908,8 +936,9 @@ function createProductCard(product) {
                     <span class="material-symbols-outlined" style="font-size: 18px; ${heartStyle}">${heartIcon}</span>
                 </button>
             </div>
-             <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+             <div class="absolute bottom-3 left-3 z-20 flex flex-col items-start gap-1">
                 ${categoryBadge}
+                ${uponRequestBadge}
             </div>
         </div>
         <div class="p-5 flex flex-col flex-grow">

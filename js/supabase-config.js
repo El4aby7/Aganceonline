@@ -14,7 +14,13 @@ window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 if (typeof window.supabase !== 'undefined') {
     if (window.supabase.createClient) {
         // First time initialization: Library is present
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                storageKey: 'agance-admin-auth',
+                storage: window.sessionStorage
+            }
+        });
         // Overwrite the library object with the client instance
         // This allows 'supabase' global to be used for queries (supabase.from...)
         window.supabase = client;

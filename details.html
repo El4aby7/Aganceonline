@@ -134,8 +134,9 @@
             <div class="lg:col-span-7 flex flex-col gap-4">
                 <!-- Main Image Container -->
                 <div class="relative w-full aspect-[16/10] bg-gray-100 dark:bg-card-dark rounded-xl overflow-hidden group border border-gray-200 dark:border-border-dark">
-                    <div class="absolute top-4 left-4 z-10">
-                        <span class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider" data-i18n="new_arrival">New Arrival</span>
+                    <div class="absolute top-4 left-4 z-10 flex flex-col items-start gap-2" id="details-badges">
+                        <span id="badge-new-arrival" class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider" data-i18n="new_arrival">New Arrival</span>
+                        <!-- Upon request badge injected by JS here -->
                     </div>
                     <img id="main-image" alt="Vehicle Image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src=""/>
                 </div>
@@ -179,15 +180,11 @@
                             <span class="material-symbols-outlined">mail</span>
                             <span data-i18n="inquire_now">Inquire Now</span>
                         </button>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="showDemoMessage()" class="border border-primary text-primary hover:bg-primary/10 h-12 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined text-[20px]">directions_car</span>
-                                <span data-i18n="test_drive">Test Drive</span>
-                            </button>
-                            <button onclick="showDemoMessage()" class="border border-gray-300 dark:border-border-dark text-slate-700 dark:text-white hover:bg-gray-100 dark:hover:bg-card-dark h-12 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                        <div class="grid grid-cols-1 gap-4">
+                            <a href="#" id="social-phone-details" class="border border-gray-300 dark:border-border-dark text-slate-700 dark:text-white hover:bg-gray-100 dark:hover:bg-card-dark h-12 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-[20px]">call</span>
                                 <span data-i18n="call_us">Call Us</span>
-                            </button>
+                            </a>
                         </div>
                     </div>
 
