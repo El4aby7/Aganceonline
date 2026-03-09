@@ -730,7 +730,7 @@ async function handleContactSubmit(e) {
             phone,
             interest,
             message,
-            vehicle_name: 'Contact Page Inquiry'
+            vehicle_name: interest
         });
 
         if (error) throw error;
