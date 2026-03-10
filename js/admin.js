@@ -384,8 +384,8 @@ function renderBrandSelector(selectedBrandId) {
         return `
             <button type="button"
                 onclick="selectBrand(${brand.id}, this)"
-                class="brand-select-btn flex-none w-20 h-20 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-black/20
-                ${isSelected ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-gray-300'}">
+                class="brand-select-btn flex-none w-20 h-20 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-gray-100
+                ${isSelected ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-gray-300 opacity-70 hover:opacity-100 hover:border-gray-300'}">
                 <img src="${escapeHtml(brand.logo_url)}" alt="${escapeHtml(brand.name)}" class="max-w-full max-h-full object-contain">
             </button>
         `;
@@ -402,10 +402,10 @@ window.selectBrand = function(id, btn) {
     // Update visuals
     document.querySelectorAll('.brand-select-btn').forEach(b => {
         b.classList.remove('border-primary', 'ring-2', 'ring-primary/50');
-        b.classList.add('border-gray-200', 'dark:border-white/10', 'opacity-70');
+        b.classList.add('border-gray-200', 'dark:border-gray-300', 'opacity-70');
     });
 
-    btn.classList.remove('border-gray-200', 'dark:border-white/10', 'opacity-70');
+    btn.classList.remove('border-gray-200', 'dark:border-gray-300', 'opacity-70');
     btn.classList.add('border-primary', 'ring-2', 'ring-primary/50');
 };
 
@@ -801,7 +801,7 @@ function renderBrands(brands) {
     tbody.innerHTML = brands.map(b => `
         <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
             <td class="px-6 py-4">
-                <div class="h-10 w-16 bg-white dark:bg-black/20 rounded flex items-center justify-center p-1 border border-gray-200 dark:border-white/10">
+                <div class="h-10 w-16 bg-white dark:bg-gray-100 rounded flex items-center justify-center p-1 border border-gray-200 dark:border-gray-300">
                     <img src="${escapeHtml(b.logo_url)}" class="max-h-full max-w-full object-contain" alt="${escapeHtml(b.name)}">
                 </div>
             </td>

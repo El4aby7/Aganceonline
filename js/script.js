@@ -548,8 +548,8 @@ function renderBrandFilters() {
         return `
             <button type="button"
                 onclick="toggleBrandFilter(${brand.id}, this)"
-                class="brand-filter-btn flex-none w-16 h-16 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-black/20
-                ${isActive ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-gray-300'}"
+                class="brand-filter-btn flex-none w-16 h-16 rounded-xl border-2 transition-all overflow-hidden flex items-center justify-center p-2 bg-white dark:bg-gray-100
+                ${isActive ? 'border-primary ring-2 ring-primary/50' : 'border-gray-200 dark:border-gray-300 opacity-70 hover:opacity-100 hover:border-gray-300'}"
                 title="${escapeHtml(brand.name)}">
                 <img src="${escapeHtml(brand.logo_url)}" alt="${escapeHtml(brand.name)}" class="max-w-full max-h-full object-contain pointer-events-none">
             </button>
@@ -562,13 +562,13 @@ window.toggleBrandFilter = function(brandId, btn) {
     if (index === -1) {
         // Add to active filters
         activeBrandFilters.push(brandId);
-        btn.classList.remove('border-gray-200', 'dark:border-white/10', 'opacity-70');
+        btn.classList.remove('border-gray-200', 'dark:border-gray-300', 'opacity-70');
         btn.classList.add('border-primary', 'ring-2', 'ring-primary/50');
     } else {
         // Remove from active filters
         activeBrandFilters.splice(index, 1);
         btn.classList.remove('border-primary', 'ring-2', 'ring-primary/50');
-        btn.classList.add('border-gray-200', 'dark:border-white/10', 'opacity-70');
+        btn.classList.add('border-gray-200', 'dark:border-gray-300', 'opacity-70');
     }
 
     filterInventory();
