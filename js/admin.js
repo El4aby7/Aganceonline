@@ -349,8 +349,17 @@ function openModal(product = null) {
             document.getElementById('p-trans').value = product.details.transmission || '';
             document.getElementById('p-fuel').value = product.details.fuel || '';
             document.getElementById('p-upon-request').checked = product.details.upon_request || false;
+
+            const diagCurrent = document.getElementById('p-diagnostics-current');
+            if (product.details.diagnostics_url) {
+                diagCurrent.classList.remove('hidden');
+                diagCurrent.querySelector('a').href = product.details.diagnostics_url;
+            } else {
+                diagCurrent.classList.add('hidden');
+            }
         } else {
             document.getElementById('p-upon-request').checked = false;
+            document.getElementById('p-diagnostics-current').classList.add('hidden');
         }
 
         // Handle Gallery
@@ -364,6 +373,7 @@ function openModal(product = null) {
         currentGallery = [];
         renderGallery();
         document.getElementById('p-brand-id').value = ''; // Ensure brand is empty for new
+        document.getElementById('p-diagnostics-current').classList.add('hidden');
     }
 
     document.getElementById('p-gallery-upload').value = '';
@@ -496,6 +506,29 @@ async function handleSaveProduct(e) {
             imageUrl = publicData.publicUrl;
         }
 
+        // 2.1 Handle Diagnostics PDF Upload
+        const diagInput = document.getElementById('p-diagnostics');
+        let diagnosticsUrl = null;
+
+        if (diagInput.files.length > 0) {
+            const file = diagInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `diag-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `public/${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('vehicle-diagnostics')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicData } = supabase.storage
+                .from('vehicle-diagnostics')
+                .getPublicUrl(filePath);
+
+            diagnosticsUrl = publicData.publicUrl;
+        }
+
         // 3. Prepare DB Object
         // Auto-translate to Arabic
         btn.textContent = 'Translating...';
@@ -558,6 +591,15 @@ async function handleSaveProduct(e) {
         } catch (transErr) {
             console.error('Translation skipped due to exception:', transErr);
             showToast(`Translation Error: ${transErr.message || transErr}`, 'error');
+        }
+
+        if (diagnosticsUrl) {
+            details.diagnostics_url = diagnosticsUrl;
+        } else if (editingId) {
+            const existingProduct = currentProducts.find(p => p.id === editingId);
+            if (existingProduct && existingProduct.details && existingProduct.details.diagnostics_url) {
+                details.diagnostics_url = existingProduct.details.diagnostics_url;
+            }
         }
 
         const payload = {
