@@ -601,7 +601,21 @@ function filterInventory() {
         return matchesTerm && matchesCategory && matchesBrand;
     });
 
-    container.innerHTML = filtered.map(product => createProductCard(product)).join('');
+    if (filtered.length === 0) {
+        let message = '';
+        if (category) {
+            message = `${category} cars aren't available at the moment.`;
+        } else {
+            message = `There are no cars matching your search at the moment.`;
+        }
+        container.innerHTML = `<div class="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 flex flex-col items-center justify-center py-20 text-center">
+            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">search_off</span>
+            <p class="text-xl text-gray-400 dark:text-gray-500 font-medium">${message}</p>
+        </div>`;
+    } else {
+        container.innerHTML = filtered.map(product => createProductCard(product)).join('');
+    }
+
     updatePrices();
     updateDOMTranslations();
 }
@@ -739,6 +753,29 @@ async function loadDetails() {
     document.getElementById('spec-mileage').textContent = displayMileage;
     document.getElementById('spec-trans').textContent = displayTrans;
     document.getElementById('spec-fuel').textContent = displayFuel;
+
+    // Diagnostics PDF Button
+    const btnDiagnostics = document.getElementById('btn-diagnostics');
+    const btnInquireNow = document.getElementById('btn-inquire-now');
+
+    if (product.details && product.details.diagnostics_url) {
+        if (btnDiagnostics) {
+            btnDiagnostics.href = product.details.diagnostics_url;
+            btnDiagnostics.classList.remove('hidden');
+        }
+        if (btnInquireNow) {
+            btnInquireNow.classList.remove('col-span-2');
+            btnInquireNow.classList.add('col-span-1');
+        }
+    } else {
+        if (btnDiagnostics) {
+            btnDiagnostics.classList.add('hidden');
+        }
+        if (btnInquireNow) {
+            btnInquireNow.classList.remove('col-span-1');
+            btnInquireNow.classList.add('col-span-2');
+        }
+    }
 
     // Gallery Thumbnails
     const galleryContainer = document.getElementById('gallery-thumbnails');

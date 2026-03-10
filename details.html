@@ -194,12 +194,16 @@
                     </div>
 
                     <!-- CTA Buttons -->
-                    <div class="grid grid-cols-1 gap-4">
-                        <button onclick="openInquiryModal()" class="bg-primary hover:bg-primary-dark text-white h-14 rounded-lg font-bold text-lg uppercase tracking-wide shadow-lg shadow-red-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="#" target="_blank" id="btn-diagnostics" class="hidden bg-slate-800 hover:bg-slate-700 text-white h-14 rounded-lg font-bold text-lg uppercase tracking-wide shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 col-span-1">
+                            <span class="material-symbols-outlined">description</span>
+                            <span data-i18n="diagnostics">Diagnostics</span>
+                        </a>
+                        <button id="btn-inquire-now" onclick="openInquiryModal()" class="bg-primary hover:bg-primary-dark text-white h-14 rounded-lg font-bold text-lg uppercase tracking-wide shadow-lg shadow-red-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 col-span-2">
                             <span class="material-symbols-outlined">mail</span>
                             <span data-i18n="inquire_now">Inquire Now</span>
                         </button>
-                        <div class="grid grid-cols-1 gap-4">
+                        <div class="grid grid-cols-1 gap-4 col-span-2">
                             <a href="#" id="social-phone-details" class="border border-gray-300 dark:border-border-dark text-slate-700 dark:text-white hover:bg-gray-100 dark:hover:bg-card-dark h-12 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-[20px]">call</span>
                                 <span data-i18n="call_us">Call Us</span>

@@ -385,6 +385,13 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium mb-1">Car Diagnostics PDF</label>
+                        <input type="file" id="p-diagnostics" accept=".pdf,application/pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-red-600 transition-all">
+                        <p class="text-xs text-gray-400 mt-1">Leave empty to keep existing PDF when editing.</p>
+                        <p id="p-diagnostics-current" class="text-sm text-green-600 dark:text-green-400 mt-1 hidden">Current: <a href="#" target="_blank" class="underline hover:text-green-800">View PDF</a></p>
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium mb-1">Gallery Media</label>
                         <div id="gallery-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             <!-- Thumbnails injected by JS -->
