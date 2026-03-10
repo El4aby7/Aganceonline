@@ -69,7 +69,7 @@
     "favorites_title": "Your Favorites",
     "no_favorites": "You haven't added any favorites yet.",
     "opt_sales": "Sales Inquiry",
-    "opt_complaint": "Make a complaint"
+    "opt_support": "Contact Support"
   },
   "ar": {
     "header_title": "اجانس اونلاين",
@@ -141,6 +141,6 @@
     "favorites_title": "المفضلة لديك",
     "no_favorites": "لم تقم بإضافة أي سيارات للمفضلة بعد.",
     "opt_sales": "استفسار عن المبيعات",
-    "opt_complaint": "تقديم شكوى"
+    "opt_support": "التواصل مع الدعم"
   }
 }
