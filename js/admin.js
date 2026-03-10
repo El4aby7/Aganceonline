@@ -415,14 +415,24 @@ function closeModal() {
 
 function renderGallery() {
     const container = document.getElementById('gallery-preview');
-    container.innerHTML = currentGallery.map((url, index) => `
+    container.innerHTML = currentGallery.map((url, index) => {
+        const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
+        const mediaTag = isVideo
+            ? `<video src="${escapeHtml(url)}" class="h-full w-full object-cover" muted></video>
+               <div class="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                   <span class="material-symbols-outlined text-white text-[24px]">play_circle</span>
+               </div>`
+            : `<img src="${escapeHtml(url)}" class="h-full w-full object-cover" alt="gallery">`;
+
+        return `
         <div class="relative group h-24 w-full rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
-            <img src="${escapeHtml(url)}" class="h-full w-full object-cover" alt="gallery">
+            ${mediaTag}
             <button type="button" onclick="deleteGalleryImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
                 <span class="material-symbols-outlined text-[16px]">close</span>
             </button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 window.deleteGalleryImage = function(index) {
@@ -580,7 +590,9 @@ async function handleSaveProduct(e) {
         if (galleryInput.files.length > 0) {
             for (const file of galleryInput.files) {
                 const fileExt = file.name.split('.').pop();
-                const fileName = `gallery-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const isVideoFile = file.type.startsWith('video/');
+                const prefix = isVideoFile ? 'video' : 'gallery';
+                const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `public/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage

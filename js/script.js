@@ -752,13 +752,30 @@ async function loadDetails() {
         if (gallery.length > 0) {
             galleryContainer.innerHTML = gallery.map((url) => {
                 const isActive = url === product.image_url;
+                const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
+
+                const mediaTag = isVideo
+                    ? `<video src="${escapeHtml(url)}" class="w-full h-full object-cover pointer-events-none" muted></video>
+                       <div class="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                           <span class="material-symbols-outlined text-white text-[24px]">play_circle</span>
+                       </div>`
+                    : `<img src="${escapeHtml(url)}" class="w-full h-full object-cover" alt="Thumbnail">`;
+
                 // Note: using dataset to pass URL safely to avoid XSS in onclick handler
                 return `
                 <button class="relative flex-none w-24 aspect-[4/3] rounded-lg overflow-hidden hover:opacity-100 transition-opacity ${isActive ? 'ring-2 ring-primary' : 'opacity-60'}" data-url="${escapeHtml(url)}" onclick="changeMainImage(this.dataset.url, this)">
-                    <img src="${escapeHtml(url)}" class="w-full h-full object-cover" alt="Thumbnail">
+                    ${mediaTag}
                 </button>
             `}).join('');
         }
+    }
+
+    // Initialize main image correctly if the first item happens to be a video
+    // (Usually image_url is an image, but just in case)
+    if (product.image_url && typeof document.createElement === 'function') {
+        const dummyBtn = document.createElement('button'); // dummy button for state update
+        dummyBtn.parentElement = document.createElement('div');
+        changeMainImage(product.image_url, dummyBtn, true);
     }
 
     updatePrices();
@@ -768,18 +785,40 @@ async function loadDetails() {
 /**
  * Updates the main image on the Details page when a thumbnail is clicked.
  */
-window.changeMainImage = function(url, btn) {
+window.changeMainImage = function(url, btn, skipStateUpdate = false) {
     const mainImg = document.getElementById('main-image');
-    if (mainImg) mainImg.src = url;
+    const mainVid = document.getElementById('main-video');
 
-    // Update active state of thumbnails
-    const buttons = btn.parentElement.querySelectorAll('button');
-    buttons.forEach(b => {
-        b.classList.remove('ring-2', 'ring-primary', 'opacity-100');
-        b.classList.add('opacity-60');
-    });
-    btn.classList.remove('opacity-60');
-    btn.classList.add('ring-2', 'ring-primary', 'opacity-100');
+    if (!mainImg || !mainVid) return;
+
+    const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
+
+    if (isVideo) {
+        mainImg.classList.add('hidden');
+        mainVid.classList.remove('hidden');
+        mainVid.src = url;
+        // Optional: auto-play when clicked
+        if (!skipStateUpdate) {
+            mainVid.play().catch(e => console.log('Autoplay prevented', e));
+        }
+    } else {
+        mainVid.classList.add('hidden');
+        mainImg.classList.remove('hidden');
+        mainVid.pause();
+        mainVid.src = ''; // Clear source to stop downloading
+        mainImg.src = url;
+    }
+
+    if (!skipStateUpdate && btn && btn.parentElement) {
+        // Update active state of thumbnails
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.classList.remove('ring-2', 'ring-primary', 'opacity-100');
+            b.classList.add('opacity-60');
+        });
+        btn.classList.remove('opacity-60');
+        btn.classList.add('ring-2', 'ring-primary', 'opacity-100');
+    }
 }
 
 function loadContact() {

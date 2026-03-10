@@ -151,12 +151,13 @@
             <!-- Left Column: Gallery & Description -->
             <div class="lg:col-span-7 flex flex-col gap-4">
                 <!-- Main Image Container -->
-                <div class="relative w-full aspect-[16/10] bg-gray-100 dark:bg-card-dark rounded-xl overflow-hidden group border border-gray-200 dark:border-border-dark">
+                <div class="relative w-full aspect-[16/10] bg-gray-100 dark:bg-card-dark rounded-xl overflow-hidden group border border-gray-200 dark:border-border-dark" id="main-media-container">
                     <div class="absolute top-4 left-4 z-10 flex flex-col items-start gap-2" id="details-badges">
                         <span id="badge-new-arrival" class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider" data-i18n="new_arrival">New Arrival</span>
                         <!-- Upon request badge injected by JS here -->
                     </div>
                     <img id="main-image" alt="Vehicle Image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src=""/>
+                    <video id="main-video" controls class="hidden w-full h-full object-cover"></video>
                 </div>
 
                 <!-- Image Thumbnails -->
