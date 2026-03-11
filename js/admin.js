@@ -428,22 +428,87 @@ function renderGallery() {
     container.innerHTML = currentGallery.map((url, index) => {
         const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
         const mediaTag = isVideo
-            ? `<video src="${escapeHtml(url)}" class="h-full w-full object-cover" muted></video>
+            ? `<video src="${escapeHtml(url)}" class="h-full w-full object-cover pointer-events-none" muted></video>
                <div class="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                    <span class="material-symbols-outlined text-white text-[24px]">play_circle</span>
                </div>`
-            : `<img src="${escapeHtml(url)}" class="h-full w-full object-cover" alt="gallery">`;
+            : `<img src="${escapeHtml(url)}" class="h-full w-full object-cover pointer-events-none" alt="gallery" draggable="false">`;
 
         return `
-        <div class="relative group h-24 w-full rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
+        <div class="relative group h-24 w-full rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 cursor-move"
+             draggable="true"
+             data-index="${index}"
+             ondragstart="handleDragStart(event)"
+             ondragover="handleDragOver(event)"
+             ondrop="handleDrop(event)"
+             ondragenter="handleDragEnter(event)"
+             ondragleave="handleDragLeave(event)"
+             ondragend="handleDragEnd(event)">
             ${mediaTag}
-            <button type="button" onclick="deleteGalleryImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="bg-black/50 rounded-full p-2 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-[24px]">drag_indicator</span>
+                </div>
+            </div>
+            <button type="button" onclick="deleteGalleryImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10">
                 <span class="material-symbols-outlined text-[16px]">close</span>
             </button>
         </div>
         `;
     }).join('');
 }
+
+let draggedGalleryIndex = null;
+
+window.handleDragStart = function(e) {
+    draggedGalleryIndex = parseInt(e.currentTarget.dataset.index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedGalleryIndex);
+    setTimeout(() => e.currentTarget.classList.add('opacity-50'), 0);
+};
+
+window.handleDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+};
+
+window.handleDragEnter = function(e) {
+    e.preventDefault();
+    const target = e.currentTarget;
+    if (parseInt(target.dataset.index) !== draggedGalleryIndex) {
+        target.classList.add('border-primary', 'border-2');
+        target.classList.remove('border-gray-200', 'dark:border-white/10');
+    }
+};
+
+window.handleDragLeave = function(e) {
+    const target = e.currentTarget;
+    target.classList.remove('border-primary', 'border-2');
+    target.classList.add('border-gray-200', 'dark:border-white/10');
+};
+
+window.handleDrop = function(e) {
+    e.preventDefault();
+    const targetIndex = parseInt(e.currentTarget.dataset.index);
+    if (draggedGalleryIndex !== null && draggedGalleryIndex !== targetIndex) {
+        // Reorder currentGallery array
+        const item = currentGallery.splice(draggedGalleryIndex, 1)[0];
+        currentGallery.splice(targetIndex, 0, item);
+        renderGallery();
+    }
+
+    e.currentTarget.classList.remove('border-primary', 'border-2');
+    e.currentTarget.classList.add('border-gray-200', 'dark:border-white/10');
+};
+
+window.handleDragEnd = function(e) {
+    e.currentTarget.classList.remove('opacity-50');
+    draggedGalleryIndex = null;
+    document.querySelectorAll('#gallery-preview > div').forEach(el => {
+        el.classList.remove('border-primary', 'border-2');
+        el.classList.add('border-gray-200', 'dark:border-white/10');
+    });
+};
 
 window.deleteGalleryImage = function(index) {
     showConfirm('Remove this image from gallery?', () => {
