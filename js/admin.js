@@ -751,7 +751,7 @@ function renderInquiries(inquiries) {
             <td class="px-6 py-4 text-sm">
                 ${inq.vehicle_name ? `<span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">${escapeHtml(inq.vehicle_name)}</span>` : '<span class="text-gray-400">-</span>'}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${escapeHtml(inq.message)}">
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" onclick="showInquiryMessage(${inq.id})" title="Click to read full message">
                 ${escapeHtml(inq.message) || '-'}
             </td>
             <td class="px-6 py-4 text-right">
@@ -805,6 +805,55 @@ window.deleteInquiry = function(id) {
             currentInquiries = currentInquiries.filter(i => i.id !== id);
             filterInquiries();
         }
+    });
+};
+
+window.showInquiryMessage = function(id) {
+    const inquiry = currentInquiries.find(i => i.id === id);
+    if (!inquiry) return;
+
+    const existing = document.getElementById('inquiry-modal');
+    if (existing) existing.remove();
+
+    const modalHtml = `
+        <div id="inquiry-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+            <div class="bg-white dark:bg-surface-card w-full max-w-lg rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col">
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-white/10 flex-shrink-0">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">chat</span> Inquiry Message
+                    </h3>
+                    <button id="inquiry-modal-close" class="text-gray-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap overflow-y-auto pr-2 custom-scrollbar flex-grow">${escapeHtml(inquiry.message)}</div>
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-white/10 flex justify-end flex-shrink-0">
+                    <button id="inquiry-modal-ok" class="px-6 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-red-600 transition-colors">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = document.getElementById('inquiry-modal');
+    const inner = modal.querySelector('div');
+
+    // Trigger animation
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        inner.classList.remove('scale-95');
+    }, 10);
+
+    const closeModal = () => {
+        modal.classList.add('opacity-0');
+        inner.classList.add('scale-95');
+        setTimeout(() => modal.remove(), 300);
+    };
+
+    document.getElementById('inquiry-modal-close').addEventListener('click', closeModal);
+    document.getElementById('inquiry-modal-ok').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
     });
 };
 
