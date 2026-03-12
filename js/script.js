@@ -9,7 +9,7 @@
  */
 
 // --- Constants & Global Variables ---
-let usdToEgpRate = 50; // Default fallback exchange rate
+let egpToUsdRate = 0.02; // Default fallback exchange rate
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'dark';
 let currentCurrency = localStorage.getItem('currency') || 'EGP';
@@ -279,6 +279,11 @@ window.toggleCurrency = function() {
     setCurrency(currentCurrency === 'USD' ? 'EGP' : 'USD');
 }
 
+// Export for testing
+if (typeof window !== 'undefined') {
+    window.setCurrency = setCurrency;
+}
+
 function updateCurrencyButtonText() {
     const btns = document.querySelectorAll('.currency-text');
     if (btns.length > 0 && translations[currentLang]) {
@@ -291,29 +296,34 @@ function updateCurrencyButtonText() {
  * Updates displayed prices based on the selected currency and exchange rate.
  */
 function updatePrices() {
-    document.querySelectorAll('[data-price-usd]').forEach(el => {
-        const usd = parseFloat(el.getAttribute('data-price-usd'));
-        el.textContent = formatPrice(usd);
+    document.querySelectorAll('[data-price-egp]').forEach(el => {
+        const egp = parseFloat(el.getAttribute('data-price-egp'));
+        if (!isNaN(egp)) {
+            el.textContent = formatPrice(egp);
+        } else {
+            el.textContent = 'Price upon request';
+        }
     });
 }
 
 /**
- * Formats a raw USD price into the target currency string.
- * @param {number} usd - Price in USD
- * @returns {string} Formatted price string (e.g. "$50,000" or "2,500,000 L.E")
+ * Formats a raw EGP price into the target currency string.
+ * @param {number} egp - Price in EGP
+ * @returns {string} Formatted price string (e.g. "2,500,000 L.E" or "$50,000")
  */
-function formatPrice(usd) {
-    if (currentCurrency === 'USD') {
+function formatPrice(egp) {
+    if (currentCurrency === 'EGP') {
+        const symbol = (translations[currentLang] && translations[currentLang].price_egp) || 'L.E';
+        return `${egp.toLocaleString()} ${symbol}`;
+    } else {
+        const usd = egp * egpToUsdRate;
         const symbol = (translations[currentLang] && translations[currentLang].price_usd) || 'USD';
         return currentLang === 'en' && symbol === 'USD' ? `$${usd.toLocaleString()}` : `${usd.toLocaleString()} ${symbol}`;
-    } else {
-        const symbol = (translations[currentLang] && translations[currentLang].price_egp) || 'L.E';
-        return `${(usd * usdToEgpRate).toLocaleString()} ${symbol}`;
     }
 }
 
 /**
- * Fetches the current USD to EGP exchange rate from Supabase.
+ * Fetches the current EGP to USD exchange rate from Supabase.
  * Falls back to default if fetching fails.
  */
 async function fetchExchangeRate() {
@@ -321,12 +331,12 @@ async function fetchExchangeRate() {
         const { data, error } = await supabase
             .from('app_settings')
             .select('value')
-            .eq('key', 'USD_TO_EGP')
+            .eq('key', 'EGP_TO_USD')
             .single();
 
         if (error) throw error;
         if (data && data.value) {
-            usdToEgpRate = parseFloat(data.value);
+            egpToUsdRate = parseFloat(data.value);
         }
     } catch (error) {
         console.error('Failed to fetch exchange rate, using fallback:', error);
@@ -720,7 +730,7 @@ async function loadDetails() {
 
     document.getElementById('vehicle-title').textContent = displayName;
     document.getElementById('vehicle-title-crumb').textContent = displayName;
-    document.getElementById('vehicle-price').setAttribute('data-price-usd', product.price_usd);
+    document.getElementById('vehicle-price').setAttribute('data-price-egp', product.price_egp || '');
     document.getElementById('vehicle-desc').textContent = displayDesc;
 
     // Badges
@@ -1065,7 +1075,7 @@ function createProductCard(product) {
                 <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">local_gas_station</span> ${escapeHtml(displayFuel)}</span>
             </div>
             <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
-                <p class="text-xl font-black text-primary tracking-tight" data-price-usd="${product.price_usd}">$${product.price_usd.toLocaleString()}</p>
+                <p class="text-xl font-black text-primary tracking-tight" data-price-egp="${product.price_egp || ''}">${product.price_egp ? product.price_egp.toLocaleString() + ' L.E' : ''}</p>
                 <a href="details.html?id=${product.id}" class="text-xs font-bold text-primary border border-primary px-3 py-1.5 rounded hover:bg-primary hover:text-white transition-all uppercase tracking-wide" data-i18n="view_details">
                     View Details
                 </a>

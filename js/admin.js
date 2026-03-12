@@ -289,7 +289,7 @@ function renderProducts(products) {
                 </div>
             </td>
             <td class="px-6 py-4 font-medium">${escapeHtml(p.name)}</td>
-            <td class="px-6 py-4">$${p.price_usd.toLocaleString()}</td>
+            <td class="px-6 py-4">${p.price_egp ? p.price_egp.toLocaleString() + ' L.E' : '-'}</td>
             <td class="px-6 py-4"><span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-xs">${escapeHtml(p.category) || '-'}</span></td>
             <td class="px-6 py-4">
                 ${p.featured ? '<span class="text-green-500 font-bold text-xs">Featured</span>' : '<span class="text-gray-400 text-xs">Standard</span>'}
@@ -338,7 +338,7 @@ function openModal(product = null) {
         title.textContent = 'Edit Vehicle';
 
         document.getElementById('p-name').value = product.name;
-        document.getElementById('p-price').value = product.price_usd;
+        document.getElementById('p-price').value = product.price_egp || '';
         document.getElementById('p-category').value = product.category;
         document.getElementById('p-featured').checked = product.featured;
         document.getElementById('p-desc').value = product.description;
@@ -669,7 +669,7 @@ async function handleSaveProduct(e) {
 
         const payload = {
             name,
-            price_usd: price,
+            price_egp: price,
             brand_id: parseInt(brandId),
             category,
             featured,
@@ -1108,7 +1108,7 @@ async function handleSaveBrand(e) {
 // --- Settings Logic ---
 
 async function loadSettings() {
-    const usdInput = document.getElementById('setting-usd-egp');
+    const egpInput = document.getElementById('setting-egp-usd');
     const tiktokInput = document.getElementById('setting-social-tiktok');
     const fbInput = document.getElementById('setting-social-facebook');
     const instaInput = document.getElementById('setting-social-instagram');
@@ -1120,7 +1120,7 @@ async function loadSettings() {
     const currentHeroSpan = document.getElementById('current-hero-image');
 
     const btn = document.getElementById('save-settings-btn');
-    const inputs = [usdInput, tiktokInput, fbInput, instaInput, whatsappInput, locPinInput, mapEmbedInput, heroImgInput].filter(i => i);
+    const inputs = [egpInput, tiktokInput, fbInput, instaInput, whatsappInput, locPinInput, mapEmbedInput, heroImgInput].filter(i => i);
 
     inputs.forEach(i => i.disabled = true);
     if(btn) {
@@ -1135,12 +1135,12 @@ async function loadSettings() {
     if (error) {
         console.error(error);
         showToast('Failed to load settings', 'error');
-        if(usdInput) usdInput.value = '50'; // Default
+        if(egpInput) egpInput.value = '0.02'; // Default
     } else {
         const settings = {};
         data.forEach(item => settings[item.key] = item.value);
 
-        if (usdInput && settings['USD_TO_EGP']) usdInput.value = settings['USD_TO_EGP'];
+        if (egpInput && settings['EGP_TO_USD']) egpInput.value = settings['EGP_TO_USD'];
         if (tiktokInput && settings['SOCIAL_TIKTOK']) tiktokInput.value = settings['SOCIAL_TIKTOK'];
         if (fbInput && settings['SOCIAL_FACEBOOK']) fbInput.value = settings['SOCIAL_FACEBOOK'];
         if (instaInput && settings['SOCIAL_INSTAGRAM']) instaInput.value = settings['SOCIAL_INSTAGRAM'];
@@ -1185,7 +1185,7 @@ async function handleSaveSettings(e) {
 
     try {
         const updates = [
-            { key: 'USD_TO_EGP', value: document.getElementById('setting-usd-egp').value },
+            { key: 'EGP_TO_USD', value: document.getElementById('setting-egp-usd').value },
             { key: 'SOCIAL_TIKTOK', value: document.getElementById('setting-social-tiktok').value },
             { key: 'SOCIAL_FACEBOOK', value: document.getElementById('setting-social-facebook').value },
             { key: 'SOCIAL_INSTAGRAM', value: document.getElementById('setting-social-instagram').value },
