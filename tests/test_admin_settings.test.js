@@ -27,7 +27,7 @@ describe('Admin Settings Logic', () => {
 
         global.document = {
             getElementById: jest.fn((id) => {
-                if (id === 'setting-usd-egp') return inputMock;
+                if (id === 'setting-egp-usd') return inputMock;
                 if (id === 'save-settings-btn') return btnMock;
                 if (id.startsWith('setting-')) return genericInputMock;
 
@@ -68,7 +68,7 @@ describe('Admin Settings Logic', () => {
 
     test('loadSettings fetches and sets value', async () => {
         const mockData = [
-            { key: 'USD_TO_EGP', value: '55.5' },
+            { key: 'EGP_TO_USD', value: '55.5' },
             { key: 'SOCIAL_TIKTOK', value: '' }
         ];
 
@@ -107,7 +107,7 @@ describe('Admin Settings Logic', () => {
         const args = calls[0][0];
 
         expect(Array.isArray(args)).toBe(true);
-        expect(args).toContainEqual({ key: 'USD_TO_EGP', value: '60' });
+        expect(args).toContainEqual({ key: 'EGP_TO_USD', value: '60' });
 
         expect(global.showToast).toHaveBeenCalledWith('Settings saved successfully!', 'success');
     });

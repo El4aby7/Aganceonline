@@ -38,16 +38,20 @@ describe('Exchange Rate Logic', () => {
         script = require('../js/script.js');
     });
 
-    test('Initial rate is 50 (fallback)', () => {
-        // 10 * 50 = 500
-        const price = script.formatPrice(10);
-        expect(price).toBe('500 L.E');
+    test('Initial rate is 0.02 (fallback)', () => {
+        // 5000 * 0.02 = 100 USD
+        // Set currency directly to bypass cached import
+        global.window.setCurrency?.('USD');
+        const price = script.formatPrice(5000);
+        expect(price).toBe('$100');
     });
 
     test('fetchExchangeRate updates the rate from Supabase', async () => {
+        global.window.setCurrency?.('USD');
+
         // Mock Supabase response
         const mockSingle = jest.fn().mockResolvedValue({
-            data: { value: '60' },
+            data: { value: '0.03' },
             error: null
         });
 
@@ -61,12 +65,14 @@ describe('Exchange Rate Logic', () => {
 
         await script.fetchExchangeRate();
 
-        const price = script.formatPrice(10);
-        // 10 * 60 = 600
-        expect(price).toBe('600 L.E');
+        const price = script.formatPrice(5000);
+        // 5000 * 0.03 = 150
+        expect(price).toBe('$150');
     });
 
     test('fetchExchangeRate handles errors and uses fallback', async () => {
+        global.window.setCurrency?.('USD');
+
         // Mock Error
         const mockSingle = jest.fn().mockResolvedValue({
             data: null,
@@ -83,8 +89,8 @@ describe('Exchange Rate Logic', () => {
 
         await script.fetchExchangeRate();
 
-        // Should still be 50
-        const price = script.formatPrice(10);
-        expect(price).toBe('500 L.E');
+        // Should still be 0.02
+        const price = script.formatPrice(5000);
+        expect(price).toBe('$100');
     });
 });
